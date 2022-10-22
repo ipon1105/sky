@@ -3,85 +3,270 @@ package com.example.sky.android
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.*
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.sky.Greeting
-
-@Composable
-fun MyApplicationTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    content: @Composable () -> Unit
-) {
-    val colors = if (darkTheme) {
-        darkColors(
-            primary = Color(0xFFBB86FC),
-            primaryVariant = Color(0xFF3700B3),
-            secondary = Color(0xFF03DAC5)
-        )
-    } else {
-        lightColors(
-            primary = Color(0xFF6200EE),
-            primaryVariant = Color(0xFF3700B3),
-            secondary = Color(0xFF03DAC5)
-        )
-    }
-    val typography = Typography(
-        body1 = TextStyle(
-            fontFamily = FontFamily.Default,
-            fontWeight = FontWeight.Normal,
-            fontSize = 16.sp
-        )
-    )
-    val shapes = Shapes(
-        small = RoundedCornerShape(4.dp),
-        medium = RoundedCornerShape(4.dp),
-        large = RoundedCornerShape(0.dp)
-    )
-
-    MaterialTheme(
-        colors = colors,
-        typography = typography,
-        shapes = shapes,
-        content = content
-    )
-}
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            MyApplicationTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colors.background
-                ) {
-                    Greeting(Greeting().greeting())
-                }
-            }
+            Login()
         }
     }
 }
 
+//@Preview (showBackground = true, backgroundColor = 0xFFFFFFFF)
 @Composable
-fun Greeting(text: String) {
-    Text(text = text)
+private fun Login(){
+
+    val btnBackColor = Color(red = 0x00, green = 0x71, blue = 0xBC)
+    val linkColor = Color(red = 0x00, green = 0x52, blue = 0xcc)
+
+    val isHidePass = remember{ mutableStateOf(true) }
+    val email = remember { mutableStateOf(TextFieldValue("")) }
+    val password = remember { mutableStateOf(TextFieldValue("")) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .background(Color.White)
+            .padding(20.dp)
+    ){
+
+        Image(
+            painter = painterResource(id = R.drawable.icon),
+            contentDescription = "App's Icon",
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Text(
+            text = "Login",
+            color = btnBackColor,
+            fontSize = 48.sp,
+            modifier = Modifier.padding(top = 12.dp)
+        )
+
+        TextField(
+            value = email.value,
+            onValueChange = { it ->
+                email.value = it
+            },
+            placeholder = { Text(text = "Email") },
+            keyboardOptions = KeyboardOptions( keyboardType = KeyboardType.Email ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color.White)
+                .padding(top = 12.dp)
+                .clickable { /*TODO: Сделать валидацию для поля ввода Email*/ },
+            singleLine = true,
+            colors = TextFieldDefaults.textFieldColors(
+                backgroundColor = Color.Transparent,
+                focusedIndicatorColor = Color.LightGray,
+                unfocusedIndicatorColor = Color.LightGray
+            ),
+            leadingIcon = {Icon(Icons.Filled.Email, contentDescription = "Email icon")}
+        )
+        TextField(
+            value = password.value,
+            onValueChange = { it ->
+                password.value = it
+            },
+            placeholder = { Text("Password") },
+            keyboardOptions = KeyboardOptions( keyboardType = KeyboardType.Password ),
+            visualTransformation = if (isHidePass.value) PasswordVisualTransformation() else VisualTransformation.None,
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color.White)
+                .padding(top = 12.dp)
+                .clickable { /*TODO: Сделать валидацию для поля ввода Password*/ },
+            singleLine = true,
+            colors = TextFieldDefaults.textFieldColors(
+                backgroundColor = Color.Transparent,
+                focusedIndicatorColor = Color.LightGray,
+                unfocusedIndicatorColor = Color.LightGray
+            ),
+            leadingIcon = {Icon(Icons.Filled.Lock, contentDescription = "Password icon")},
+            trailingIcon = { Icon(
+                imageVector = ImageVector.vectorResource(id = if (isHidePass.value) R.drawable.eye_hide else R.drawable.eye_show),
+                contentDescription = "Password Hide icon",
+                modifier = Modifier.clickable(onClick = {
+                    isHidePass.value = !isHidePass.value
+                })
+            )},
+        )
+        Row(
+            horizontalArrangement = Arrangement.End,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = "Forgot password?",
+                modifier = Modifier
+                    .padding(top = 6.dp)
+                    .clickable { /*TODO: Сделать переход из экрана Входа на экран Забыл пароль*/ },
+                color = linkColor
+            )
+        }
+        Button(
+            onClick = { /*TODO: Сделать обработку данных для входа*/ },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 25.dp),
+            shape = RoundedCornerShape(12.dp),
+            colors = ButtonDefaults.buttonColors(
+                backgroundColor = btnBackColor
+            )
+        ) {
+            Text( text = "Login", color = Color.White)
+        }
+        Row (
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxWidth()
+        ){
+            Text(text = "New to Logistics? ")
+            Text(
+                text = " Register",
+                color = linkColor,
+                modifier = Modifier.clickable { /*TODO: Сделать переход из экрана Входа на экран Забыл пароль*/ }
+            )
+        }
+    }
 }
 
-@Preview
+@Preview (showBackground = true, backgroundColor = 0xFFFFFFFF)
 @Composable
-fun DefaultPreview() {
-    MyApplicationTheme {
-        Greeting("Hello, Android!")
-    }
+private fun ForgotPassword(){
+/*
+    var btnBackColor: Color = Color(red = 0x00, green = 0x71, blue = 0xBC)
+    var linkColor: Color = Color(red = 0x00, green = 0x52, blue = 0xcc)
+    var isHidePass = remember{ mutableStateOf(true) }
+
+    var email = remember { mutableStateOf(TextFieldValue("")) }
+    var password = remember { mutableStateOf(TextFieldValue("")) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .background(Color.White)
+            .padding(20.dp)
+    ){
+
+        Image(
+            painter = painterResource(id = R.drawable.icon),
+            contentDescription = "App's Icon",
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Text(
+            text = "Login",
+            color = btnBackColor,
+            fontSize = 48.sp,
+            modifier = Modifier.padding(top = 12.dp)
+        )
+
+        TextField(
+            value = email.value,
+            onValueChange = { it ->
+                email.value = it
+            },
+            placeholder = { Text(text = "Email") },
+            keyboardOptions = KeyboardOptions( keyboardType = KeyboardType.Email ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color.White)
+                .padding(top = 12.dp)
+                .clickable {  },
+            singleLine = true,
+            colors = TextFieldDefaults.textFieldColors(
+                backgroundColor = Color.Transparent,
+                focusedIndicatorColor = Color.LightGray,
+                unfocusedIndicatorColor = Color.LightGray
+            ),
+            leadingIcon = {Icon(Icons.Filled.Email, contentDescription = "Email icon")}
+        )
+        TextField(
+            value = password.value,
+            onValueChange = { it ->
+                password.value = it
+            },
+            placeholder = { Text("Password") },
+            keyboardOptions = KeyboardOptions( keyboardType = KeyboardType.Password ),
+            visualTransformation = if (isHidePass.value) PasswordVisualTransformation() else VisualTransformation.None,
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color.White)
+                .padding(top = 12.dp)
+                .clickable {  },
+            singleLine = true,
+            colors = TextFieldDefaults.textFieldColors(
+                backgroundColor = Color.Transparent,
+                focusedIndicatorColor = Color.LightGray,
+                unfocusedIndicatorColor = Color.LightGray
+            ),
+            leadingIcon = {Icon(Icons.Filled.Lock, contentDescription = "Password icon")},
+            trailingIcon = { Icon(
+                imageVector = ImageVector.vectorResource(id = if (isHidePass.value) R.drawable.eye_hide else R.drawable.eye_show),
+                contentDescription = "Password Hide icon",
+                modifier = Modifier.clickable(onClick = {
+                    isHidePass.value = !isHidePass.value
+                })
+            )},
+        )
+        Row(
+            horizontalArrangement = Arrangement.End,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = "Forgot password?",
+                modifier = Modifier
+                    .padding(top = 6.dp)
+                    .clickable {  },
+                color = linkColor
+            )
+        }
+        Button(
+            onClick = {  },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 25.dp),
+            shape = RoundedCornerShape(12.dp),
+            colors = ButtonDefaults.buttonColors(
+                backgroundColor = btnBackColor
+            )
+        ) {
+            Text( text = "Login", color = Color.White)
+        }
+        Row (
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxWidth()
+        ){
+            Text(text = "New to Logistics? ")
+            Text(
+                text = " Register",
+                color = linkColor,
+                modifier = Modifier.clickable {  }
+            )
+        }
+    }*/
 }
