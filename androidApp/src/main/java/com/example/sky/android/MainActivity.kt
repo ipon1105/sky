@@ -16,6 +16,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -30,12 +31,13 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            Login()
+            //Login()
+            ForgotPassword()
         }
     }
 }
 
-//@Preview (showBackground = true, backgroundColor = 0xFFFFFFFF)
+@Preview (showBackground = true, backgroundColor = 0xFFFFFFFF)
 @Composable
 private fun Login(){
 
@@ -53,7 +55,6 @@ private fun Login(){
             .background(Color.White)
             .padding(20.dp)
     ){
-
         Image(
             painter = painterResource(id = R.drawable.icon),
             contentDescription = "App's Icon",
@@ -137,7 +138,7 @@ private fun Login(){
                 backgroundColor = btnBackColor
             )
         ) {
-            Text( text = "Login", color = Color.White)
+            Text( text = "Login", color = Color.White, modifier = Modifier.padding(6.dp))
         }
         Row (
             horizontalArrangement = Arrangement.Center,
@@ -156,13 +157,10 @@ private fun Login(){
 @Preview (showBackground = true, backgroundColor = 0xFFFFFFFF)
 @Composable
 private fun ForgotPassword(){
-/*
-    var btnBackColor: Color = Color(red = 0x00, green = 0x71, blue = 0xBC)
-    var linkColor: Color = Color(red = 0x00, green = 0x52, blue = 0xcc)
-    var isHidePass = remember{ mutableStateOf(true) }
 
-    var email = remember { mutableStateOf(TextFieldValue("")) }
-    var password = remember { mutableStateOf(TextFieldValue("")) }
+    val btnBackColor = Color(red = 0x00, green = 0x71, blue = 0xBC)
+
+    val email = remember { mutableStateOf(TextFieldValue("")) }
 
     Column(
         modifier = Modifier
@@ -172,6 +170,13 @@ private fun ForgotPassword(){
             .padding(20.dp)
     ){
 
+        Row(horizontalArrangement = Arrangement.Start){
+            Image(
+                painter = rememberVectorPainter(image = Icons.Filled.ArrowBack),
+                contentDescription = "Назад",
+                modifier = Modifier.clickable { /*TODO: Сделать переход на экран входа*/ }
+            )
+        }
         Image(
             painter = painterResource(id = R.drawable.icon),
             contentDescription = "App's Icon",
@@ -179,10 +184,16 @@ private fun ForgotPassword(){
         )
 
         Text(
-            text = "Login",
+            text = "Forgot Password?",
             color = btnBackColor,
             fontSize = 48.sp,
             modifier = Modifier.padding(top = 12.dp)
+        )
+
+        Text(
+            text = "Don't worry! It happens. Please enter the address associated with your account.",
+            modifier = Modifier.padding(top = 12.dp),
+            color = Color.Gray
         )
 
         TextField(
@@ -196,57 +207,17 @@ private fun ForgotPassword(){
                 .fillMaxWidth()
                 .background(Color.White)
                 .padding(top = 12.dp)
-                .clickable {  },
+                .clickable { /*TODO: Сделать валидацию для поля ввода Email*/},
             singleLine = true,
             colors = TextFieldDefaults.textFieldColors(
                 backgroundColor = Color.Transparent,
                 focusedIndicatorColor = Color.LightGray,
                 unfocusedIndicatorColor = Color.LightGray
             ),
-            leadingIcon = {Icon(Icons.Filled.Email, contentDescription = "Email icon")}
+            leadingIcon = {Icon(imageVector = Icons.Filled.Email, contentDescription = "Email icon")}
         )
-        TextField(
-            value = password.value,
-            onValueChange = { it ->
-                password.value = it
-            },
-            placeholder = { Text("Password") },
-            keyboardOptions = KeyboardOptions( keyboardType = KeyboardType.Password ),
-            visualTransformation = if (isHidePass.value) PasswordVisualTransformation() else VisualTransformation.None,
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color.White)
-                .padding(top = 12.dp)
-                .clickable {  },
-            singleLine = true,
-            colors = TextFieldDefaults.textFieldColors(
-                backgroundColor = Color.Transparent,
-                focusedIndicatorColor = Color.LightGray,
-                unfocusedIndicatorColor = Color.LightGray
-            ),
-            leadingIcon = {Icon(Icons.Filled.Lock, contentDescription = "Password icon")},
-            trailingIcon = { Icon(
-                imageVector = ImageVector.vectorResource(id = if (isHidePass.value) R.drawable.eye_hide else R.drawable.eye_show),
-                contentDescription = "Password Hide icon",
-                modifier = Modifier.clickable(onClick = {
-                    isHidePass.value = !isHidePass.value
-                })
-            )},
-        )
-        Row(
-            horizontalArrangement = Arrangement.End,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(
-                text = "Forgot password?",
-                modifier = Modifier
-                    .padding(top = 6.dp)
-                    .clickable {  },
-                color = linkColor
-            )
-        }
         Button(
-            onClick = {  },
+            onClick = { /*TODO: Сделать обработку данных для востановления пароля*/ },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 25.dp),
@@ -255,18 +226,7 @@ private fun ForgotPassword(){
                 backgroundColor = btnBackColor
             )
         ) {
-            Text( text = "Login", color = Color.White)
+            Text( text = "Submit", color = Color.White, modifier = Modifier.padding(6.dp))
         }
-        Row (
-            horizontalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxWidth()
-        ){
-            Text(text = "New to Logistics? ")
-            Text(
-                text = " Register",
-                color = linkColor,
-                modifier = Modifier.clickable {  }
-            )
-        }
-    }*/
+    }
 }
