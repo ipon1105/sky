@@ -7,6 +7,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.runtime.Composable
@@ -14,7 +15,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -43,6 +46,13 @@ fun LoginScreen(navController: NavHostController) {
             .background(Color.White)
             .padding(20.dp)
     ){
+        Row(horizontalArrangement = Arrangement.Start){
+            Image(
+                painter = rememberVectorPainter(image = Icons.Filled.ArrowBack),
+                contentDescription = " ",
+                colorFilter = ColorFilter.tint(Color.Transparent)
+            )
+        }
         Image(
             painter = painterResource(id = R.drawable.icon),
             contentDescription = "App's Icon",
@@ -133,7 +143,7 @@ fun LoginScreen(navController: NavHostController) {
             horizontalArrangement = Arrangement.Center,
             modifier = Modifier.fillMaxWidth().padding(top = 6.dp)
         ){
-            Text(text = "New to Logistics? ")
+            Text(text = "New to Logistics? ", color = Color.Gray)
             Text(
                 text = " Register",
                 color = linkColor,

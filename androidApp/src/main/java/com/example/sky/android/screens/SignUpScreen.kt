@@ -169,7 +169,7 @@ fun SignUpScreen(navController: NavHostController) {
             horizontalArrangement = Arrangement.Start,
             modifier = Modifier.padding(top = 6.dp).fillMaxWidth()
         ) {
-            Text(text = "By signing up, you're agree to our ")
+            Text(text = "By signing up, you're agree to our ", color = Color.Gray)
             Text(
                 text = "Terms & Conditions ",
                 modifier = Modifier
@@ -181,7 +181,7 @@ fun SignUpScreen(navController: NavHostController) {
             horizontalArrangement = Arrangement.Start,
             modifier = Modifier.fillMaxWidth()
         ){
-            Text(text = "and ")
+            Text(text = "and ", color = Color.Gray)
             Text(
                 text = "Privacy Policy ",
                 modifier = Modifier
@@ -205,7 +205,7 @@ fun SignUpScreen(navController: NavHostController) {
             horizontalArrangement = Arrangement.Center,
             modifier = Modifier.padding(top = 6.dp).fillMaxWidth()
         ){
-            Text(text = "Joined us before? ")
+            Text(text = "Joined us before? ", color = Color.Gray)
             Text(
                 text = " Login",
                 color = linkColor,
