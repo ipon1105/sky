@@ -173,7 +173,7 @@ fun SignUpScreen(navController: NavHostController) {
             Text(
                 text = "Terms & Conditions ",
                 modifier = Modifier
-                    .clickable { /*TODO: Сделать переход из экрана Регистрации на экран Terms & Conditions*/ },
+                    .clickable { navController.navigate(route = NavRoute.TermsAndConditions.route) },
                 color = linkColor
             )
         }
@@ -185,7 +185,7 @@ fun SignUpScreen(navController: NavHostController) {
             Text(
                 text = "Privacy Policy ",
                 modifier = Modifier
-                    .clickable { /*TODO: Сделать переход из экрана Регистрации на экран Privacy Policy*/ },
+                    .clickable { navController.navigate(route = NavRoute.PrivacyPolicy.route) },
                 color = linkColor
             )
         }
