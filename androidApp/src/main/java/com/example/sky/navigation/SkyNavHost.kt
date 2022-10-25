@@ -12,6 +12,7 @@ sealed class NavRoute(val route: String){
     object ForgotPassword: NavRoute("forgot_password_screen")
     object PrivacyPolicy: NavRoute("privacy_policy_screen")
     object TermsAndConditions: NavRoute("terms_and_conditions_screen")
+    object Main: NavRoute("main_screen")
 
 }
 
@@ -25,5 +26,6 @@ fun SkyNavHost() {
         composable(NavRoute.ForgotPassword.route){ ForgotPasswordScreen(navController = navController) }
         composable(NavRoute.PrivacyPolicy.route){ PrivacyPolicyScreen(navController = navController) }
         composable(NavRoute.TermsAndConditions.route){ TermsAndConditionsScreen(navController = navController) }
+        composable(NavRoute.Main.route){ MainScreen(navController = navController) }
     }
 }
