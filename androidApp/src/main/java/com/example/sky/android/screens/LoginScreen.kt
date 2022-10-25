@@ -68,7 +68,7 @@ fun LoginScreen(navController: NavHostController) {
 
         TextField(
             value = email.value,
-            onValueChange = { it ->
+            onValueChange = {
                 email.value = it
             },
             placeholder = { Text(text = "Email") },
@@ -88,7 +88,7 @@ fun LoginScreen(navController: NavHostController) {
         )
         TextField(
             value = password.value,
-            onValueChange = { it ->
+            onValueChange = {
                 password.value = it
             },
             placeholder = { Text("Password") },
@@ -128,7 +128,7 @@ fun LoginScreen(navController: NavHostController) {
             )
         }
         Button(
-            onClick = { /*TODO: Сделать обработку данных для входа*/ },
+            onClick = { navController.navigate(NavRoute.Main.route)/*TODO: Сделать обработку данных для входа*/ },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 25.dp),
