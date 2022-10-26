@@ -51,4 +51,10 @@ dependencies {
     //implementation ("androidx.compose.foundation:foundation:2.7.2")
     implementation ("com.google.maps.android:maps-compose-widgets:2.7.2")
 
+    //Firebase
+    implementation ("com.google.firebase:firebase-bom:31.0.1")
+    implementation ("com.google.gms:google-services:4.3.13")
+    implementation ("com.google.firebase:firebase-auth-ktx:21.1.0")
+    //implementation ("com.google.firebase:firebase-analytics-ktx")
+
 }

@@ -11,4 +11,5 @@ tasks.register("clean", Delete::class) {
 }
 repositories {
     google()
+    mavenCentral()
 }
