@@ -1,3 +1,11 @@
 package com.example.sky.android.models
 
-data class FlatModel(val address: String)
+//Класс описывающий Квартиру в базе данных
+data class FlatModel(
+    val id: UInt,
+    val address: String,
+    val photo: String,
+    val owner: UInt,
+    var pricePerDay: UInt,
+    val description: String
+)
