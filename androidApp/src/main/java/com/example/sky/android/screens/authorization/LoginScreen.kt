@@ -1,5 +1,7 @@
 package com.example.sky.android.screens
 
+import android.util.Log
+import android.util.Patterns
 import com.example.sky.android.R
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -11,6 +13,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -28,9 +31,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.sky.navigation.NavRoute
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 
 @Composable
 fun LoginScreen(navController: NavHostController) {
+    val auth = Firebase.auth
 
     val btnBackColor = Color(red = 0x00, green = 0x71, blue = 0xBC)
     val linkColor = Color(red = 0x00, green = 0x52, blue = 0xcc)
@@ -38,6 +44,9 @@ fun LoginScreen(navController: NavHostController) {
     val isHidePass = remember{ mutableStateOf(true) }
     val email = remember { mutableStateOf(TextFieldValue("")) }
     val password = remember { mutableStateOf(TextFieldValue("")) }
+
+    val isEmailValid = derivedStateOf { Patterns.EMAIL_ADDRESS.matcher(email.value.text).matches() }
+    val isPasswordValid = derivedStateOf { password.value.text.length > 7 }
 
     Column(
         modifier = Modifier
@@ -76,15 +85,15 @@ fun LoginScreen(navController: NavHostController) {
             modifier = Modifier
                 .fillMaxWidth()
                 .background(Color.White)
-                .padding(top = 12.dp)
-                .clickable { /*TODO: Сделать валидацию для поля ввода Email*/ },
+                .padding(top = 12.dp),
             singleLine = true,
             colors = TextFieldDefaults.textFieldColors(
                 backgroundColor = Color.Transparent,
                 focusedIndicatorColor = Color.LightGray,
                 unfocusedIndicatorColor = Color.LightGray
             ),
-            leadingIcon = { Icon(Icons.Filled.Email, contentDescription = "Email icon") }
+            leadingIcon = { Icon(Icons.Filled.Email, contentDescription = "Email icon") },
+            isError = !isEmailValid.value,
         )
         TextField(
             value = password.value,
@@ -97,8 +106,7 @@ fun LoginScreen(navController: NavHostController) {
             modifier = Modifier
                 .fillMaxWidth()
                 .background(Color.White)
-                .padding(top = 12.dp)
-                .clickable { /*TODO: Сделать валидацию для поля ввода Password*/ },
+                .padding(top = 12.dp),
             singleLine = true,
             colors = TextFieldDefaults.textFieldColors(
                 backgroundColor = Color.Transparent,
@@ -112,8 +120,9 @@ fun LoginScreen(navController: NavHostController) {
                 modifier = Modifier.clickable(onClick = {
                     isHidePass.value = !isHidePass.value
                 })
-            )
-            },
+            )},
+            isError = !isPasswordValid.value
+
         )
         Row(
             horizontalArrangement = Arrangement.End,
@@ -128,7 +137,17 @@ fun LoginScreen(navController: NavHostController) {
             )
         }
         Button(
-            onClick = { navController.navigate(NavRoute.Main.route)/*TODO: Сделать обработку данных для входа*/ },
+            onClick = {
+                if (isEmailValid.value && isPasswordValid.value)
+                    auth.signInWithEmailAndPassword(email.value.text, password.value.text).addOnCompleteListener{
+                        if (it.isSuccessful) {
+                            Log.i("LoginAuthorization", "Log is successful")
+                            navController.navigate(NavRoute.Main.route)
+                        } else {
+                            Log.e("LoginAuthorization", "Log is failed", it.exception)
+                            /*TODO: Сделать обработку ошибок входа*/
+                        }
+                    }},
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 25.dp),
