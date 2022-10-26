@@ -33,13 +33,22 @@ android {
 
 dependencies {
     implementation(project(":shared"))
-    implementation("androidx.compose.ui:ui:1.2.1")
-    implementation("androidx.compose.ui:ui-tooling:1.2.1")
-    implementation("androidx.compose.ui:ui-tooling-preview:1.2.1")
-    implementation("androidx.compose.foundation:foundation:1.2.1")
-    implementation("androidx.compose.material:material:1.2.1")
+
+    val composeVersion = "1.2.1"
+    implementation("androidx.compose.ui:ui:$composeVersion")
+    implementation("androidx.compose.ui:ui-tooling:$composeVersion")
+    implementation("androidx.compose.ui:ui-tooling-preview:$composeVersion")
+    implementation("androidx.compose.foundation:foundation:$composeVersion")
+    implementation("androidx.compose.material:material:$composeVersion")
     implementation("androidx.activity:activity-compose:1.5.1")
 
     //Зависимость для навигацииы
     implementation("androidx.navigation:navigation-compose:2.4.1")
+
+    //Зависимость для карты Google
+    implementation ("com.google.maps.android:maps-compose:2.7.2")
+    implementation ("com.google.android.gms:play-services-maps:18.0.2")
+    //implementation ("androidx.compose.foundation:foundation:2.7.2")
+    implementation ("com.google.maps.android:maps-compose-widgets:2.7.2")
+
 }
