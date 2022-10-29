@@ -94,7 +94,7 @@ fun LoginScreen(navController: NavHostController) {
                     unfocusedIndicatorColor = Color.LightGray
                 ),
                 leadingIcon = { Icon(Icons.Filled.Email, contentDescription = "Email icon") },
-                isError = !isEmailValid.value,
+                isError = !isEmailValid.value && showErrorMessages,
             )
             if (showErrorMessages && !isEmailValid.value)
                 Text(
@@ -134,7 +134,7 @@ fun LoginScreen(navController: NavHostController) {
                         isHidePass.value = !isHidePass.value
                     })
                 )},
-                isError = !isPasswordValid.value
+                isError = !isPasswordValid.value && showErrorMessages
             )
 
             if (showErrorMessages && !isPasswordValid.value)
