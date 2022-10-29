@@ -12,10 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
@@ -31,6 +28,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.sky.navigation.NavRoute
+import com.example.sky.ui.theme.linkColor
+import com.example.sky.ui.theme.mainColor
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 
@@ -38,15 +37,16 @@ import com.google.firebase.ktx.Firebase
 fun LoginScreen(navController: NavHostController) {
     val auth = Firebase.auth
 
-    val btnBackColor = Color(red = 0x00, green = 0x71, blue = 0xBC)
-    val linkColor = Color(red = 0x00, green = 0x52, blue = 0xcc)
-
     val isHidePass = remember{ mutableStateOf(true) }
     val email = remember { mutableStateOf(TextFieldValue("")) }
     val password = remember { mutableStateOf(TextFieldValue("")) }
 
     val isEmailValid = derivedStateOf { Patterns.EMAIL_ADDRESS.matcher(email.value.text).matches() }
     val isPasswordValid = derivedStateOf { password.value.text.length > 7 }
+
+    var showErrorMessages by remember {
+        mutableStateOf(false)
+    }
 
     Column(
         modifier = Modifier
@@ -70,60 +70,84 @@ fun LoginScreen(navController: NavHostController) {
 
         Text(
             text = "Login",
-            color = btnBackColor,
+            color = mainColor,
             fontSize = 48.sp,
             modifier = Modifier.padding(top = 12.dp)
         )
 
-        TextField(
-            value = email.value,
-            onValueChange = {
-                email.value = it
-            },
-            placeholder = { Text(text = "Email") },
-            keyboardOptions = KeyboardOptions( keyboardType = KeyboardType.Email ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color.White)
-                .padding(top = 12.dp),
-            singleLine = true,
-            colors = TextFieldDefaults.textFieldColors(
-                backgroundColor = Color.Transparent,
-                focusedIndicatorColor = Color.LightGray,
-                unfocusedIndicatorColor = Color.LightGray
-            ),
-            leadingIcon = { Icon(Icons.Filled.Email, contentDescription = "Email icon") },
-            isError = !isEmailValid.value,
-        )
-        TextField(
-            value = password.value,
-            onValueChange = {
-                password.value = it
-            },
-            placeholder = { Text("Password") },
-            keyboardOptions = KeyboardOptions( keyboardType = KeyboardType.Password ),
-            visualTransformation = if (isHidePass.value) PasswordVisualTransformation() else VisualTransformation.None,
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color.White)
-                .padding(top = 12.dp),
-            singleLine = true,
-            colors = TextFieldDefaults.textFieldColors(
-                backgroundColor = Color.Transparent,
-                focusedIndicatorColor = Color.LightGray,
-                unfocusedIndicatorColor = Color.LightGray
-            ),
-            leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = "Password icon") },
-            trailingIcon = { Icon(
-                imageVector = ImageVector.vectorResource(id = if (isHidePass.value) R.drawable.eye_hide else R.drawable.eye_show),
-                contentDescription = "Password Hide icon",
-                modifier = Modifier.clickable(onClick = {
-                    isHidePass.value = !isHidePass.value
-                })
-            )},
-            isError = !isPasswordValid.value
+        Column(modifier = Modifier.fillMaxWidth()) {
+            TextField(
+                value = email.value,
+                onValueChange = {
+                    email.value = it
+                },
+                placeholder = { Text(text = "Email") },
+                keyboardOptions = KeyboardOptions( keyboardType = KeyboardType.Email ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.White)
+                    .padding(top = 12.dp),
+                singleLine = true,
+                colors = TextFieldDefaults.textFieldColors(
+                    backgroundColor = Color.Transparent,
+                    focusedIndicatorColor = Color.LightGray,
+                    unfocusedIndicatorColor = Color.LightGray
+                ),
+                leadingIcon = { Icon(Icons.Filled.Email, contentDescription = "Email icon") },
+                isError = !isEmailValid.value,
+            )
+            if (showErrorMessages && !isEmailValid.value)
+                Text(
+                    text = "Incorrectly email",
+                    color = MaterialTheme.colors.error,
+                    style = MaterialTheme.typography.caption,
+                    modifier = Modifier
+                        .padding(start = 8.dp)
+                        .fillMaxWidth()
+                )
+        }
 
-        )
+        Column(modifier = Modifier.fillMaxWidth()) {
+            TextField(
+                value = password.value,
+                onValueChange = {
+                    password.value = it
+                },
+                placeholder = { Text("Password") },
+                keyboardOptions = KeyboardOptions( keyboardType = KeyboardType.Password ),
+                visualTransformation = if (isHidePass.value) PasswordVisualTransformation() else VisualTransformation.None,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.White)
+                    .padding(top = 12.dp),
+                singleLine = true,
+                colors = TextFieldDefaults.textFieldColors(
+                    backgroundColor = Color.Transparent,
+                    focusedIndicatorColor = Color.LightGray,
+                    unfocusedIndicatorColor = Color.LightGray
+                ),
+                leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = "Password icon") },
+                trailingIcon = { Icon(
+                    imageVector = ImageVector.vectorResource(id = if (isHidePass.value) R.drawable.eye_hide else R.drawable.eye_show),
+                    contentDescription = "Password Hide icon",
+                    modifier = Modifier.clickable(onClick = {
+                        isHidePass.value = !isHidePass.value
+                    })
+                )},
+                isError = !isPasswordValid.value
+            )
+
+            if (showErrorMessages && !isPasswordValid.value)
+                Text(
+                    text = "Incorrectly password",
+                    color = MaterialTheme.colors.error,
+                    style = MaterialTheme.typography.caption,
+                    modifier = Modifier
+                        .padding(start = 8.dp)
+                        .fillMaxWidth()
+                )
+        }
+
         Row(
             horizontalArrangement = Arrangement.End,
             modifier = Modifier.fillMaxWidth()
@@ -138,8 +162,9 @@ fun LoginScreen(navController: NavHostController) {
         }
         Button(
             onClick = {
-                if (isEmailValid.value && isPasswordValid.value)
-                    auth.signInWithEmailAndPassword(email.value.text, password.value.text).addOnCompleteListener{
+                //navController.navigate(NavRoute.Main.route)
+                if (isEmailValid.value && isPasswordValid.value){
+                    auth.signInWithEmailAndPassword(email.value.text, password.value.text).addOnCompleteListener {
                         if (it.isSuccessful) {
                             Log.i("LoginAuthorization", "Log is successful")
                             navController.navigate(NavRoute.Main.route)
@@ -147,20 +172,27 @@ fun LoginScreen(navController: NavHostController) {
                             Log.e("LoginAuthorization", "Log is failed", it.exception)
                             /*TODO: Сделать обработку ошибок входа*/
                         }
-                    }},
+                    }
+                    showErrorMessages = false
+                }
+                else
+                    showErrorMessages = true
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 25.dp),
             shape = RoundedCornerShape(12.dp),
             colors = ButtonDefaults.buttonColors(
-                backgroundColor = btnBackColor
+                backgroundColor = mainColor
             )
         ) {
             Text( text = "Login", color = Color.White, modifier = Modifier.padding(6.dp))
         }
         Row (
             horizontalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxWidth().padding(top = 6.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 6.dp)
         ){
             Text(text = "New to Logistics? ", color = Color.Gray)
             Text(
