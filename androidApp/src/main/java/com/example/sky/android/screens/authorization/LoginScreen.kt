@@ -166,14 +166,21 @@ fun LoginScreen(navController: NavHostController) {
             onClick = {
                 //navController.navigate(NavRoute.Main.route)
                 if (isEmailValid.value && isPasswordValid.value){
-                    auth.signInWithEmailAndPassword(email.value.text, password.value.text).addOnCompleteListener {
+                    auth.signInWithEmailAndPassword(
+                        email.value.text,
+                        password.value.text
+                    ).addOnCompleteListener {
                         if (it.isSuccessful) {
-                            Log.i("LoginAuthorization", "Log is successful")
+                            Log.i("LoginAuthorization", "Log is Complete and successful")
                             navController.navigate(NavRoute.Main.route)
                         } else {
-                            Log.e("LoginAuthorization", "Log is failed", it.exception)
+                            Log.e("LoginAuthorization", "Log is Complete and not successful", it.exception)
                             openDialog.value = true
                         }
+                    }.addOnCanceledListener {
+                        Log.i("LoginAuthorization", "Log is Cancel")
+                    }.addOnFailureListener {
+                        Log.e("LoginAuthorization", "Log is Fail and failed", it)
                     }
                     showErrorMessages = false
                 }
