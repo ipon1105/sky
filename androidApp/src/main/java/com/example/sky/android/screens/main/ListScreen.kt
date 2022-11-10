@@ -1,49 +1,82 @@
 package com.example.sky.android.screens
 
+import androidx.compose.foundation.Canvas
 import com.example.sky.android.R
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.Card
-import androidx.compose.material.Text
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.sky.android.models.FlatModel
 
 @Composable
 fun ListScreen() {
+    val search = remember {
+        mutableStateOf("")
+    }
     Column(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 20.dp),
     ) {
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.fillMaxWidth(),
-        ){
-            Button(onClick = { /*TODO: Сортировка Свободно*/ }) {
-                Text("Свободно")
-            }
-            Button(onClick = { /*TODO: Сортировка Занято*/ }) {
-                Text("Занято")
-            }
-            Button(onClick = { /*TODO: Сортировка Грязно*/ }) {
-                Text("Грязно")
-            }
-        }
+//        Row(
+//            horizontalArrangement = Arrangement.SpaceBetween,
+//            modifier = Modifier.fillMaxWidth(),
+//        ){
+//            Button(onClick = { /*TODO: Сортировка Свободно*/ }) {
+//                Text("Свободно")
+//            }
+//            Button(onClick = { /*TODO: Сортировка Занято*/ }) {
+//                Text("Занято")
+//            }
+//            Button(onClick = { /*TODO: Сортировка Грязно*/ }) {
+//                Text("Грязно")
+//            }
+//        }
+        TextField(
+            value = search.value,
+            onValueChange = {
+                search.value = it
+            },
+            placeholder = { Text(text = "Search") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color.White)
+                .padding(top = 12.dp),
+            singleLine = true,
+            colors = TextFieldDefaults.textFieldColors(
+                backgroundColor = Color.Transparent,
+                focusedIndicatorColor = Color.LightGray,
+                unfocusedIndicatorColor = Color.LightGray
+            ),
+            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Email icon") },
+        )
+        val list: ArrayList<FlatModel>
+        //list.add(FlatModel(id = 1u, address = "Ул. Калинина, д. 102, кв. 10", photo = "photo1", owner = 1u, pricePerDay = 1u, description = "Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1"))
 
         LazyColumn{
             itemsIndexed(
                 items = listOf(
-                    FlatModel(id = 1u, address = "address1", photo = "photo1", owner = 1u, pricePerDay = 1u, description = "Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1"),
-                    FlatModel(id = 2u, address = "address2", photo = "photo2", owner = 2u, pricePerDay = 2u, description = "Description2"),
+                    FlatModel(id = 2u, address = "Ул. Тракторостроителей, д.52, кв. 17", photo = "photo2", owner = 2u, pricePerDay = 2u, description = "Description2"),
                     FlatModel(id = 3u, address = "address3", photo = "photo3", owner = 3u, pricePerDay = 3u, description = "Description3"),
                     FlatModel(id = 4u, address = "address4", photo = "photo4", owner = 4u, pricePerDay = 4u, description = "Description4"),
                     FlatModel(id = 5u, address = "address5", photo = "photo5", owner = 5u, pricePerDay = 5u, description = "Description5"),
@@ -71,9 +104,7 @@ fun ListScreen() {
 
 @Composable
 fun FlatElementList(el: FlatModel){
-    var isExpanded by remember {
-        mutableStateOf(false)
-    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -94,20 +125,49 @@ fun FlatElementList(el: FlatModel){
             )
             
             Column(
-                modifier = Modifier.padding(top = 10.dp, start = 10.dp),
+                modifier = Modifier.padding(top = 10.dp, start = 10.dp, end = 10.dp),
             ) {
-                Text(text = el.address)
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    Row(modifier = Modifier.fillMaxWidth(0.9f)){
+                        Text(
+                            text = el.address.uppercase(),
+                            fontWeight = FontWeight.W700,
+                            overflow = TextOverflow.Ellipsis,
+                            maxLines = 1,
+                        )
+                    }
+
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.CenterEnd
+                    ){
+                        MyCircle()
+                        //TODO: Нарисовать круг состояния
+                    }
+                }
                 Text(
-                    modifier = Modifier.clickable {
-                        isExpanded = !isExpanded
-                    }.fillMaxHeight(),
-                    maxLines = if (isExpanded) 5 else 1,
+                    modifier = Modifier
+                        .fillMaxHeight(),
+                    maxLines = 3,
                     text = el.description,
-                    overflow = TextOverflow.Clip,
+                    overflow = TextOverflow.Ellipsis,
                     softWrap = true
                 )
             }
             
         }
     }
+}
+
+@Composable
+fun MyCircle(){
+    Canvas(modifier = Modifier.size(20.dp), onDraw = {
+        drawCircle(color = Color.Red)
+    })
+}
+
+@Composable
+@Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
+fun preview(){
+    ListScreen()
 }
