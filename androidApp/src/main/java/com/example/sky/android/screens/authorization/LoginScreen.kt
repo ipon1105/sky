@@ -35,14 +35,16 @@ import com.google.firebase.ktx.Firebase
 
 @Composable
 fun LoginScreen(navController: NavHostController) {
+    //TODO: Сделать проверку интернета
     val auth = Firebase.auth
-
     val isHidePass = remember{ mutableStateOf(true) }
     val email = remember { mutableStateOf(TextFieldValue("")) }
     val password = remember { mutableStateOf(TextFieldValue("")) }
 
     val isEmailValid = derivedStateOf { Patterns.EMAIL_ADDRESS.matcher(email.value.text).matches() }
     val isPasswordValid = derivedStateOf { password.value.text.length > 7 }
+
+    val openDialog = remember { mutableStateOf(false) }
 
     var showErrorMessages by remember {
         mutableStateOf(false)
@@ -170,7 +172,7 @@ fun LoginScreen(navController: NavHostController) {
                             navController.navigate(NavRoute.Main.route)
                         } else {
                             Log.e("LoginAuthorization", "Log is failed", it.exception)
-                            /*TODO: Сделать обработку ошибок входа*/
+                            openDialog.value = true
                         }
                     }
                     showErrorMessages = false
@@ -201,5 +203,42 @@ fun LoginScreen(navController: NavHostController) {
                 modifier = Modifier.clickable { navController.navigate(route = NavRoute.SignUp.route) }
             )
         }
+    }
+
+    //AlertDialog
+    if (openDialog.value) {
+        AlertDialog(
+            onDismissRequest = { openDialog.value = false },
+            title = {
+                Text(
+                    text = "Error",
+                    color = Color.Red
+                )
+            },
+            text = {
+                Column() {
+                    Text(
+                        text  = "Invalid Email or password"
+                    )
+                }
+            },
+            buttons = {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(start = 8.dp, end = 8.dp, bottom = 8.dp),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    Button(
+                        onClick = { openDialog.value = false },
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            backgroundColor = mainColor
+                        ),
+
+                    ) {
+                        Text( text = "Okay", color = Color.White, modifier = Modifier.padding(6.dp))
+                    }
+                }
+            }
+        )
     }
 }
