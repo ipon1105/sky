@@ -17,10 +17,10 @@ sealed class NavRoute(val route: String){
 }
 
 @Composable
-fun SkyNavHost() {
+fun SkyNavHost(startDestination: String = NavRoute.Login.route) {
     val navController = rememberNavController()
     
-    NavHost(navController = navController, startDestination = NavRoute.Login.route){
+    NavHost(navController = navController, startDestination = startDestination){
         composable(NavRoute.Login.route){ LoginScreen(navController = navController) }
         composable(NavRoute.SignUp.route){ SignUpScreen(navController = navController) }
         composable(NavRoute.ForgotPassword.route){ ForgotPasswordScreen(navController = navController) }
