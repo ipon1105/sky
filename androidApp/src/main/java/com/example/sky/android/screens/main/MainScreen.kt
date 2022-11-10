@@ -11,15 +11,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.unit.TextUnit
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.sky.ui.theme.mainColor
 
 @Composable
 fun MainScreen(navController: NavHostController)
 {
-    val btnBackColor = Color(red = 0x00, green = 0x71, blue = 0xBC)
     val bottomState = remember{mutableStateOf("List")}
 
     //ImageVector.vectorResource(R.drawable.)
@@ -28,24 +25,24 @@ fun MainScreen(navController: NavHostController)
 
         },
         bottomBar = {
-            BottomNavigation(backgroundColor = btnBackColor) {
+            BottomNavigation(backgroundColor = mainColor) {
                 BottomNavigationItem(
                     selected = bottomState.value == "List",
                     onClick = { bottomState.value = "List"},
-                    label = { Text(text = "List")},
-                    icon = { Icon(imageVector = ImageVector.vectorResource(id = R.drawable.list), contentDescription = "List Icon")},
+                    label = { Text(text = "List", color = Color.White)},
+                    icon = { Icon(imageVector = ImageVector.vectorResource(id = R.drawable.list), contentDescription = "List Icon", tint = Color.White)},
                 )
                 BottomNavigationItem(
                     selected = bottomState.value == "Map",
                     onClick = { bottomState.value = "Map"},
-                    label = { Text(text = "Map")},
-                    icon = { Icon(imageVector = ImageVector.vectorResource(id = R.drawable.map), contentDescription = "Map Icon")},
+                    label = { Text(text = "Map", color = Color.White)},
+                    icon = { Icon(imageVector = ImageVector.vectorResource(id = R.drawable.map), contentDescription = "Map Icon", tint = Color.White)},
                 )
                 BottomNavigationItem(
                     selected = bottomState.value == "Account",
                     onClick = { bottomState.value = "Account"},
-                    label = { Text(text = "Account")},
-                    icon = { Icon(imageVector = ImageVector.vectorResource(id = R.drawable.account), contentDescription = "Account Icon")},
+                    label = { Text(text = "Account", color = Color.White)},
+                    icon = { Icon(imageVector = ImageVector.vectorResource(id = R.drawable.account), contentDescription = "Account Icon", tint = Color.White)},
                 )
             }
         },
@@ -53,7 +50,6 @@ fun MainScreen(navController: NavHostController)
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(20.dp)
                     .padding(bottom = it.calculateBottomPadding())
             ) {
                 when(bottomState.value){
