@@ -29,6 +29,8 @@
     <string name="phoneNumber">Phone number</string>
     <string name="id">ID</string>
     <string name="search">Search</string>
+    <string name="privacyPolicy">Privacy Policy</string>
+    <string name="termsAndConditions">Terms &amp; Conditions</string>
 
     <!-- ForgotPassword -->
     <string name="forgotPasswordMsg">Don\'t worry! It happens. Please enter the address associated with your account.</string>
@@ -58,4 +60,9 @@
     <string name="signUpNicknameLargeError">Large nickname</string>
     <string name="signUpNicknameNumberError">The nickname must not contain numbers</string>
 
+    <!-- Privacy Policy -->
+    <string name="privacyPolicyText">Privacy Policy Text.</string>
+
+    <!-- Terms & Conditions -->
+    <string name="termsAndConditionText">Terms &amp; Conditions Text.</string>
 </resources>

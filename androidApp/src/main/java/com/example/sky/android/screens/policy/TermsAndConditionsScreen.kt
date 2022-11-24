@@ -9,41 +9,45 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavHostController
+import com.example.sky.android.R
+import com.example.sky.ui.theme.ComponentDiffNormal
+import com.example.sky.ui.theme.ScreenArea
+import com.example.sky.ui.theme.largeFont
+import com.example.sky.ui.theme.mainColor
 
 @Composable
 fun TermsAndConditionsScreen(navController: NavHostController) {
-    val btnBackColor = Color(red = 0x00, green = 0x71, blue = 0xBC)
-
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .background(Color.White)
-            .padding(20.dp)
+            .padding(ScreenArea)
     ) {
+        // Кнопка назад
         Row(horizontalArrangement = Arrangement.Start) {
             Image(
                 painter = rememberVectorPainter(image = Icons.Filled.ArrowBack),
-                contentDescription = " ",
+                contentDescription = stringResource(id = R.string.imageDescriptionBack),
                 modifier = Modifier.clickable { navController.popBackStack() }
             )
         }
 
+        // Заголовок страницы
         Text(
-            text = "Terms & Conditions",
-            color = btnBackColor,
-            fontSize = 48.sp,
-            modifier = Modifier.padding(top = 12.dp)
+            text = stringResource(id = R.string.termsAndConditions),
+            color = mainColor,
+            fontSize = largeFont,
+            modifier = Modifier.padding(top = ComponentDiffNormal)
         )
 
         /*TODO: Добавить текст для Terms & Conditions*/
         Text(
-            text = "Terms & Conditions Text.",
+            text = stringResource(id = R.string.termsAndConditionText),
             color = Color.Gray,
-            modifier = Modifier.padding(top = 12.dp)
+            modifier = Modifier.padding(top = ComponentDiffNormal)
         )
     }
 }
