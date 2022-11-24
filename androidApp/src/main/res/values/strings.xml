@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ENG -->
+    <!-- imageDescriptions -->
+    <string name="iconDescription">App\'s Icon</string>
+    <string name="imageDescriptionEmail">Email icon</string>
+    <string name="imageDescriptionPhone">Phone icon</string>
+    <string name="imageDescriptionBack">Back icon</string>
+    <string name="imageDescriptionPassword">Password icon</string>
+    <string name="imageDescriptionHideShowPassword">Password Hide icon</string>
+    <string name="imageDescriptionNickname">Nickname icon</string>
+
+    <!-- General -->
+    <string name="phone">Phone</string>
+    <string name="login">Login</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="emailError">Incorrectly email</string>
+    <string name="passwordError">Incorrectly password</string>
+    <string name="phoneError">Incorrectly phone</string>
+    <string name="forgotPassword">Forgot Password?</string>
+    <string name="error">Error</string>
+    <string name="nickname">Nickname</string>
+
+    <!-- ForgotPassword -->
+    <string name="forgotPasswordMsg">Don\'t worry! It happens. Please enter the address associated with your account.</string>
+    <string name="forgotPasswordSubmit">Submit</string>
+
+    <!-- Login -->
+    <string name="loginMsgRegister">New to Logistics? </string>
+    <string name="loginMsgRegisterLink"> Register</string>
+    <string name="loginErrorMsg">Invalid Email or password</string>
+
+    <!-- AlertDialog -->
+    <string name="alertOkay">Okay</string>
+
+    <!-- SignUp -->
+    <string name="signUp">Sign Up</string>
+    <string name="signUpPasswordNotSimilarError">Passwords are not similar</string>
+    <string name="signUpRepeatPassword">Repeat password</string>
+    <string name="signUpEmailExists">A user with the same email already exists</string>
+    <string name="signUpLogin"> Login</string>
+    <string name="signUpJoin">Joined us before? </string>
+    <string name="signUpContinue">Continue</string>
+    <string name="signUpAnd">and </string>
+    <string name="signUpPrivacyPolicy">Privacy Policy </string>
+    <string name="signUpAgree">By signing up, you\'re agree to our </string>
+    <string name="signUpTC">Terms &amp; Conditions </string>
+    <string name="signUpNicknameLittleError">Little nickname</string>
+    <string name="signUpNicknameLargeError">Large nickname</string>
+    <string name="signUpNicknameNumberError">The nickname must not contain numbers</string>
+
+</resources>

@@ -15,91 +15,90 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.example.sky.ui.theme.mainColor
+import com.example.sky.ui.theme.*
 
 @Composable
 fun ForgotPasswordScreen(navController: NavHostController) {
 
     val email = remember { mutableStateOf(TextFieldValue("")) }
-
     val isEmailValid = derivedStateOf { Patterns.EMAIL_ADDRESS.matcher(email.value.text).matches() }
+    var showErrorMessages by remember { mutableStateOf(false) }
 
-    var showErrorMessages by remember {
-        mutableStateOf(false)
-    }
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .background(Color.White)
-            .padding(20.dp)
+            .padding(SceenArea)
     ){
-
+        //Кнопка назад
         Row(horizontalArrangement = Arrangement.Start){
             Image(
                 painter = rememberVectorPainter(image = Icons.Filled.ArrowBack),
-                contentDescription = "Назад",
+                contentDescription = stringResource(id = R.string.imageDescriptionBack),
                 modifier = Modifier.clickable { navController.popBackStack() }
             )
         }
+
+        // Изображение главной иконки
         Image(
             painter = painterResource(id = R.drawable.icon),
-            contentDescription = "App's Icon",
+            contentDescription = stringResource(id = R.string.iconDescription),
             modifier = Modifier.fillMaxWidth()
         )
 
+        // Заголовок страницы
         Text(
-            text = "Forgot Password?",
+            text = stringResource(id = R.string.forgotPassword),
             color = mainColor,
-            fontSize = 48.sp,
-            modifier = Modifier.padding(top = 12.dp)
+            fontSize = largeFont,
+            modifier = Modifier.padding(top = ComponentDiffNormal)
         )
 
+        // Вспомогательный текст под заголовком
         Text(
-            text = "Don't worry! It happens. Please enter the address associated with your account.",
-            modifier = Modifier.padding(top = 12.dp),
+            text = stringResource(id = R.string.forgotPasswordMsg),
+            modifier = Modifier.padding(top = ComponentDiffNormal),
             color = Color.Gray
         )
 
+        // Почта
         Column(modifier = Modifier.fillMaxWidth()) {
             TextField(
                 value = email.value,
-                onValueChange = { it ->
-                    email.value = it
-                },
-                placeholder = { Text(text = "Email") },
+                onValueChange = { it -> email.value = it },
+                placeholder = { Text(text = stringResource(id = R.string.email)) },
                 keyboardOptions = KeyboardOptions( keyboardType = KeyboardType.Email ),
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(Color.White)
-                    .padding(top = 12.dp),
+                    .padding(top = ComponentDiffNormal),
                 singleLine = true,
                 colors = TextFieldDefaults.textFieldColors(
                     backgroundColor = Color.Transparent,
                     focusedIndicatorColor = Color.LightGray,
                     unfocusedIndicatorColor = Color.LightGray
                 ),
-                leadingIcon = { Icon(imageVector = Icons.Filled.Email, contentDescription = "Email icon") },
+                leadingIcon = { Icon(imageVector = Icons.Filled.Email, contentDescription = stringResource(id = R.string.imageDescriptionEmail)) },
                 isError = !isEmailValid.value && showErrorMessages,
             )
 
             if (showErrorMessages && !isEmailValid.value)
                 Text(
-                    text = "Incorrectly email",
+                    text = stringResource(id = R.string.emailError),
                     color = MaterialTheme.colors.error,
                     style = MaterialTheme.typography.caption,
                     modifier = Modifier
-                        .padding(start = 8.dp)
+                        .padding(start = ErrorStart)
                         .fillMaxWidth()
                 )
         }
 
-
+        // Кнопка подтвердить
         Button(
             onClick = {
                 if (!isEmailValid.value)
@@ -111,13 +110,11 @@ fun ForgotPasswordScreen(navController: NavHostController) {
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 25.dp),
-            shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(
-                backgroundColor = mainColor
-            )
+                .padding(top = ComponentDiffLarge),
+            shape = RoundedCornerShape(size = largeShape),
+            colors = ButtonDefaults.buttonColors( backgroundColor = mainColor ),
         ) {
-            Text( text = "Submit", color = Color.White, modifier = Modifier.padding(6.dp))
+            Text(text = stringResource(id = R.string.forgotPasswordSubmit), color = Color.White, modifier = Modifier.padding(all = ButtonArea))
         }
     }
 }

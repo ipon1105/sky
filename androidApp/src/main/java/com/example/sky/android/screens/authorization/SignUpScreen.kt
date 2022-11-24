@@ -16,22 +16,22 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.sky.navigation.NavRoute
-import com.example.sky.ui.theme.linkColor
-import com.example.sky.ui.theme.mainColor
+import com.example.sky.ui.theme.*
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 
 fun consistDigits(str: String): Boolean {
-    for (i in 0..str.length-1)
+    //for (i in 0..str.length-1)
+    for (i in 0 until str.length)
         if (str[i].isDigit())
             return true
     return false
@@ -44,21 +44,19 @@ fun SignUpScreen(navController: NavHostController) {
 
     val nickname = remember { mutableStateOf(TextFieldValue("")) }
     val email = remember { mutableStateOf(TextFieldValue("")) }
-    val isHidePass_1 = remember{ mutableStateOf(true) }
-    val isHidePass_2 = remember{ mutableStateOf(true) }
-    val password_1 = remember { mutableStateOf(TextFieldValue("")) }
-    val password_2 = remember { mutableStateOf(TextFieldValue("")) }
+    val isHidePass = remember{ mutableStateOf(true) }
+    val isHideProvingPass = remember{ mutableStateOf(true) }
+    val password = remember { mutableStateOf(TextFieldValue("")) }
+    val provingPassword = remember { mutableStateOf(TextFieldValue("")) }
     val phone = remember { mutableStateOf("") }
 
     val isEmailValid by derivedStateOf { Patterns.EMAIL_ADDRESS.matcher(email.value.text).matches() }
-    val isPassword1Valid by derivedStateOf { password_1.value.text.length > 7 }
-    val isPassword2Valid by derivedStateOf { password_2.value.text.length > 7 && password_1.value.text.equals(password_2.value.text)}
+    val isHidePassValid by derivedStateOf { password.value.text.length > 7 }
+    val isHideProvingPassValid by derivedStateOf { provingPassword.value.text.length > 7 && password.value.text.equals(provingPassword.value.text)}
     val isNickNameValid by derivedStateOf { nickname.value.text.length >= 4 && nickname.value.text.length <= 16 && !consistDigits(nickname.value.text) }
     val isPhoneValid by derivedStateOf { Patterns.PHONE.matcher(phone.value).matches() }
 
-    var showErrorMessages by remember {
-        mutableStateOf(false)
-    }
+    var showErrorMessages by remember { mutableStateOf(false) }
     val openDialog = remember { mutableStateOf(false) }
 
     Column(
@@ -66,58 +64,59 @@ fun SignUpScreen(navController: NavHostController) {
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .background(Color.White)
-            .padding(20.dp)
+            .padding(SceenArea)
     ){
+        //Кнопка назад
         Row(horizontalArrangement = Arrangement.Start){
             Image(
                 painter = rememberVectorPainter(image = Icons.Filled.ArrowBack),
-                contentDescription = "Назад",
+                contentDescription = stringResource(id = R.string.imageDescriptionBack),
                 modifier = Modifier.clickable { navController.popBackStack() }
             )
         }
+
+        // Изображение главной иконки
         Image(
             painter = painterResource(id = R.drawable.icon),
-            contentDescription = "App's Icon",
+            contentDescription = stringResource(id = R.string.iconDescription),
             modifier = Modifier.fillMaxWidth()
         )
 
-
+        // Заголовок страницы
         Text(
-            text = "Sign Up",
+            text = stringResource(id = R.string.signUp),
             color = mainColor,
-            fontSize = 48.sp,
-            modifier = Modifier.padding(top = 12.dp)
+            fontSize = largeFont,
+            modifier = Modifier.padding(top = ComponentDiffNormal)
         )
 
         // Никнейм
         Column(modifier = Modifier.fillMaxWidth()) {
             TextField(
                 value = nickname.value,
-                onValueChange = { it ->
-                    nickname.value = it
-                },
-                placeholder = { Text("Nickname") },
+                onValueChange = { it -> nickname.value = it },
+                placeholder = { Text(stringResource(id = R.string.nickname)) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(Color.White)
-                    .padding(top = 12.dp),
+                    .padding(top = ComponentDiffNormal),
                 singleLine = true,
                 colors = TextFieldDefaults.textFieldColors(
                     backgroundColor = Color.Transparent,
                     focusedIndicatorColor = Color.LightGray,
                     unfocusedIndicatorColor = Color.LightGray
                 ),
-                leadingIcon = { Icon(Icons.Filled.Face, contentDescription = "Nickname icon") },
+                leadingIcon = { Icon(Icons.Filled.Face, contentDescription = stringResource(id = R.string.imageDescriptionNickname)) },
                 isError = showErrorMessages && !isNickNameValid,
             )
 
             if (showErrorMessages && !isNickNameValid)
                 Text(
-                    text = if (nickname.value.text.length < 4) "Little nickname" else if (nickname.value.text.length > 16) "Large nickname" else "The nickname must not contain numbers",
+                    text = stringResource(id = if (nickname.value.text.length < 4) R.string.signUpNicknameLittleError else if (nickname.value.text.length > 16) R.string.signUpNicknameLargeError else R.string.signUpNicknameNumberError),
                     color = MaterialTheme.colors.error,
                     style = MaterialTheme.typography.caption,
                     modifier = Modifier
-                        .padding(start = 8.dp)
+                        .padding(start = ErrorStart)
                         .fillMaxWidth()
                 )
         }
@@ -126,32 +125,30 @@ fun SignUpScreen(navController: NavHostController) {
         Column(modifier = Modifier.fillMaxWidth()) {
             TextField(
                 value = phone.value,
-                onValueChange = { it ->
-                    phone.value = it
-                },
-                placeholder = { Text(text = "Phone") },
-                keyboardOptions = KeyboardOptions( keyboardType = KeyboardType.Email ),
+                onValueChange = { it -> phone.value = it },
+                placeholder = { Text(text = stringResource(id = R.string.phone)) },
+                keyboardOptions = KeyboardOptions( keyboardType = KeyboardType.Phone ),
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(Color.White)
-                    .padding(top = 12.dp),
+                    .padding(top = ComponentDiffNormal),
                 singleLine = true,
                 colors = TextFieldDefaults.textFieldColors(
                     backgroundColor = Color.Transparent,
                     focusedIndicatorColor = Color.LightGray,
                     unfocusedIndicatorColor = Color.LightGray
                 ),
-                leadingIcon = { Icon(Icons.Filled.Phone, contentDescription = "Email icon") },
+                leadingIcon = { Icon(Icons.Filled.Phone, contentDescription = stringResource(id = R.string.imageDescriptionPhone)) },
                 isError = showErrorMessages && !isPhoneValid,
             )
 
-            if (showErrorMessages && ! isEmailValid)
+            if (showErrorMessages && ! isPhoneValid)
                 Text(
-                    text = "Incorrectly email",
+                    text = stringResource(id = R.string.phoneError),
                     color = MaterialTheme.colors.error,
                     style = MaterialTheme.typography.caption,
                     modifier = Modifier
-                        .padding(start = 8.dp)
+                        .padding(start = ErrorStart)
                         .fillMaxWidth()
                 )
         }
@@ -160,32 +157,30 @@ fun SignUpScreen(navController: NavHostController) {
         Column(modifier = Modifier.fillMaxWidth()) {
             TextField(
                 value = email.value,
-                onValueChange = { it ->
-                    email.value = it
-                },
-                placeholder = { Text(text = "Email") },
+                onValueChange = { it -> email.value = it },
+                placeholder = { Text(text = stringResource(id = R.string.email)) },
                 keyboardOptions = KeyboardOptions( keyboardType = KeyboardType.Email ),
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(Color.White)
-                    .padding(top = 12.dp),
+                    .padding(top = ComponentDiffNormal),
                 singleLine = true,
                 colors = TextFieldDefaults.textFieldColors(
                     backgroundColor = Color.Transparent,
                     focusedIndicatorColor = Color.LightGray,
                     unfocusedIndicatorColor = Color.LightGray
                 ),
-                leadingIcon = { Icon(Icons.Filled.Email, contentDescription = "Email icon") },
+                leadingIcon = { Icon(Icons.Filled.Email, contentDescription = stringResource(id = R.string.imageDescriptionEmail)) },
                 isError = showErrorMessages && !isEmailValid,
             )
 
             if (showErrorMessages && ! isEmailValid)
                 Text(
-                    text = "Incorrectly email",
+                    text = stringResource(id = R.string.emailError),
                     color = MaterialTheme.colors.error,
                     style = MaterialTheme.typography.caption,
                     modifier = Modifier
-                        .padding(start = 8.dp)
+                        .padding(start = ErrorStart)
                         .fillMaxWidth()
                 )
         }
@@ -193,122 +188,116 @@ fun SignUpScreen(navController: NavHostController) {
         // Пароль 1
         Column(modifier = Modifier.fillMaxWidth()) {
             TextField(
-                value = password_1.value,
-                onValueChange = { it ->
-                    password_1.value = it
-                },
-                placeholder = { Text("Password") },
+                value = password.value,
+                onValueChange = { it -> password.value = it },
+                placeholder = { Text(stringResource(id = R.string.password)) },
                 keyboardOptions = KeyboardOptions( keyboardType = KeyboardType.Password ),
-                visualTransformation = if (isHidePass_1.value) PasswordVisualTransformation() else VisualTransformation.None,
+                visualTransformation = if (isHidePass.value) PasswordVisualTransformation() else VisualTransformation.None,
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(Color.White)
-                    .padding(top = 12.dp),
+                    .padding(top = ComponentDiffNormal),
                 singleLine = true,
                 colors = TextFieldDefaults.textFieldColors(
                     backgroundColor = Color.Transparent,
                     focusedIndicatorColor = Color.LightGray,
                     unfocusedIndicatorColor = Color.LightGray
                 ),
-                leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = "Password icon") },
+                leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = stringResource(id = R.string.imageDescriptionPassword)) },
                 trailingIcon = { Icon(
-                    imageVector = ImageVector.vectorResource(id = if (isHidePass_1.value) R.drawable.eye_hide else R.drawable.eye_show),
-                    contentDescription = "Password Hide icon",
-                    modifier = Modifier.clickable(onClick = {
-                        isHidePass_1.value = !isHidePass_1.value
-                    })
+                    imageVector = ImageVector.vectorResource(id = if (isHidePass.value) R.drawable.eye_hide else R.drawable.eye_show),
+                    contentDescription = stringResource(id = R.string.imageDescriptionHideShowPassword),
+                    modifier = Modifier.clickable(onClick = { isHidePass.value = !isHidePass.value }),
                 )
                 },
-                isError = showErrorMessages && !isPassword1Valid,
+                isError = showErrorMessages && !isHidePassValid,
             )
 
-            if (showErrorMessages && ! isPassword1Valid)
+            if (showErrorMessages && ! isHidePassValid)
                 Text(
-                    text = "Incorrectly password",
+                    text = stringResource(id = R.string.passwordError),
                     color = MaterialTheme.colors.error,
                     style = MaterialTheme.typography.caption,
                     modifier = Modifier
-                        .padding(start = 8.dp)
-                        .fillMaxWidth()
+                        .padding(start = ErrorStart)
+                        .fillMaxWidth(),
                 )
         }
 
         // Пароль 2
         Column(modifier = Modifier.fillMaxWidth()) {
             TextField(
-                value = password_2.value,
-                onValueChange = { it ->
-                    password_2.value = it
-                },
-                placeholder = { Text("Repeat password") },
+                value = provingPassword.value,
+                onValueChange = { it -> provingPassword.value = it },
+                placeholder = { Text(stringResource(id = R.string.signUpRepeatPassword)) },
                 keyboardOptions = KeyboardOptions( keyboardType = KeyboardType.Password ),
-                visualTransformation = if (isHidePass_2.value) PasswordVisualTransformation() else VisualTransformation.None,
+                visualTransformation = if (isHideProvingPass.value) PasswordVisualTransformation() else VisualTransformation.None,
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(Color.White)
-                    .padding(top = 12.dp),
+                    .padding(top = ComponentDiffNormal),
                 singleLine = true,
                 colors = TextFieldDefaults.textFieldColors(
                     backgroundColor = Color.Transparent,
                     focusedIndicatorColor = Color.LightGray,
                     unfocusedIndicatorColor = Color.LightGray
                 ),
-                leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = "Password icon") },
+                leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = stringResource(id = R.string.imageDescriptionPassword)) },
                 trailingIcon = { Icon(
-                    imageVector = ImageVector.vectorResource(id = if (isHidePass_2.value) R.drawable.eye_hide else R.drawable.eye_show),
-                    contentDescription = "Password Hide icon",
-                    modifier = Modifier.clickable(onClick = {
-                        isHidePass_2.value = !isHidePass_2.value
-                    }))},
-                isError = showErrorMessages && !isPassword2Valid,
+                    imageVector = ImageVector.vectorResource(id = if (isHideProvingPass.value) R.drawable.eye_hide else R.drawable.eye_show),
+                    contentDescription = stringResource(id = R.string.imageDescriptionHideShowPassword),
+                    modifier = Modifier.clickable(onClick = { isHideProvingPass.value = !isHideProvingPass.value })
+                )},
+                isError = showErrorMessages && !isHideProvingPassValid,
             )
 
-            if (showErrorMessages && ! isPassword2Valid)
+            if (showErrorMessages && ! isHideProvingPassValid)
                 Text(
-                    text = if (password_1.value.text.equals(password_2.value.text)) "Incorrectly password" else "Passwords are not similar",
+                    text = stringResource( id = if (password.value.text.equals(provingPassword.value.text)) R.string.passwordError else R.string.signUpPasswordNotSimilarError),
                     color = MaterialTheme.colors.error,
                     style = MaterialTheme.typography.caption,
                     modifier = Modifier
-                        .padding(start = 8.dp)
+                        .padding(start = ErrorStart)
                         .fillMaxWidth()
                 )
         }
 
-        Row(
-            horizontalArrangement = Arrangement.Start,
-            modifier = Modifier
-                .padding(top = 6.dp)
-                .fillMaxWidth()
-        ) {
-            Text(text = "By signing up, you're agree to our ", color = Color.Gray)
-            Text(
-                text = "Terms & Conditions ",
+        // Ссылки на Пользовательсткое соглашение и Политику конфиденциальности
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Row(
+                horizontalArrangement = Arrangement.Start,
                 modifier = Modifier
-                    .clickable { navController.navigate(route = NavRoute.TermsAndConditions.route) },
-                color = linkColor
-            )
+                    .padding(top = TextTopSmall)
+                    .fillMaxWidth()
+            ) {
+                Text(text = stringResource(id = R.string.signUpAgree) + " ", color = Color.Gray)
+                Text(text = stringResource(id = R.string.signUpTC),
+                     modifier = Modifier.clickable { navController.navigate(route = NavRoute.TermsAndConditions.route) },
+                     color = linkColor
+                )
+            }
+            Row(
+                horizontalArrangement = Arrangement.Start,
+                modifier = Modifier.fillMaxWidth()
+            ){
+                Text(text = stringResource(id = R.string.signUpAnd) + " ", color = Color.Gray)
+                Text(text = stringResource(id = R.string.signUpPrivacyPolicy),
+                     modifier = Modifier.clickable { navController.navigate(route = NavRoute.PrivacyPolicy.route) },
+                     color = linkColor
+                )
+            }
         }
-        Row(
-            horizontalArrangement = Arrangement.Start,
-            modifier = Modifier.fillMaxWidth()
-        ){
-            Text(text = "and ", color = Color.Gray)
-            Text(
-                text = "Privacy Policy ",
-                modifier = Modifier
-                    .clickable { navController.navigate(route = NavRoute.PrivacyPolicy.route) },
-                color = linkColor
-            )
-        }
+
+        // Кнопка продолжить
         Button(
             onClick = {
-                if (!isEmailValid || !isNickNameValid || !isPassword1Valid || !isPassword2Valid || !isPhoneValid)
+                if (!isEmailValid || !isNickNameValid || !isHidePassValid || !isHideProvingPassValid || !isPhoneValid)
                     showErrorMessages = true
                 else {
                     showErrorMessages = false
                     auth.createUserWithEmailAndPassword(
                         email.value.text,
-                        password_1.value.text
+                        password.value.text
                     ).addOnCompleteListener {
                         if (it.isSuccessful) {
                             Log.i("SignUpAuthorization", "SignUp is Complete and successful")
@@ -327,59 +316,48 @@ fun SignUpScreen(navController: NavHostController) {
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 25.dp),
-            shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(
-                backgroundColor = mainColor
-            )
+                .padding(top = ComponentDiffLarge),
+            shape = RoundedCornerShape(largeShape),
+            colors = ButtonDefaults.buttonColors(backgroundColor = mainColor)
         ) {
-            Text( text = "Continue", color = Color.White, modifier = Modifier.padding(6.dp))
+            Text( text = stringResource(id = R.string.signUpContinue), color = Color.White, modifier = Modifier.padding(ButtonArea))
         }
+
+        // Ссылка на страницу входа
         Row (
             horizontalArrangement = Arrangement.Center,
             modifier = Modifier
-                .padding(top = 6.dp)
+                .padding(top = TextTopSmall)
                 .fillMaxWidth()
         ){
-            Text(text = "Joined us before? ", color = Color.Gray)
-            Text(
-                text = " Login",
-                color = linkColor,
-                modifier = Modifier.clickable { navController.navigate(route = NavRoute.Login.route) }
+            Text(text = stringResource(id = R.string.signUpJoin)+" ", color = Color.Gray)
+            Text(text = stringResource(id = R.string.signUpLogin),
+                 color = linkColor,
+                 modifier = Modifier.clickable { navController.navigate(route = NavRoute.Login.route) }
             )
         }
     }
 
+    // Диалоговое окно
     if (openDialog.value) {
         AlertDialog(
             onDismissRequest = { openDialog.value = false },
-            title = {
-                Text(
-                    text = "Error",
-                    color = Color.Red
-                )
-            },
-            text = {
-                Column() {
-                    Text(
-                        text  = "A user with the same email already exists"
-                    )
-                }
-            },
+            title = { Text( text = stringResource(id = R.string.error), color = Color.Red) },
+            text = { Text(text  = stringResource(id = R.string.signUpEmailExists)) },
             buttons = {
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(start = 8.dp, end = 8.dp, bottom = 8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(all = alertDialogArea)
+                        .padding(top = 0.dp),
                     horizontalArrangement = Arrangement.End
                 ) {
                     Button(
                         onClick = { openDialog.value = false },
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            backgroundColor = mainColor
-                        ),
-
-                        ) {
-                        Text( text = "Okay", color = Color.White, modifier = Modifier.padding(6.dp))
+                        shape = RoundedCornerShape(size = largeShape),
+                        colors = ButtonDefaults.buttonColors( backgroundColor = mainColor),
+                    ) {
+                        Text( text = stringResource(id = R.string.alertOkay), color = Color.White, modifier = Modifier.padding(all = TextTopSmall))
                     }
                 }
             }

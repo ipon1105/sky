@@ -20,8 +20,7 @@ class MainActivity : ComponentActivity() {
         // Прячем системную панель навигации
         window.insetsController?.apply {
             hide(WindowInsets.Type.navigationBars())
-            systemBarsBehavior =
-                WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         }
     }
 }

@@ -19,17 +19,16 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.sky.navigation.NavRoute
-import com.example.sky.ui.theme.linkColor
-import com.example.sky.ui.theme.mainColor
+import com.example.sky.ui.theme.*
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 
@@ -37,6 +36,7 @@ import com.google.firebase.ktx.Firebase
 fun LoginScreen(navController: NavHostController) {
     //TODO: Сделать проверку интернета
     val auth = Firebase.auth
+
     val isHidePass = remember{ mutableStateOf(true) }
     val email = remember { mutableStateOf(TextFieldValue("")) }
     val password = remember { mutableStateOf(TextFieldValue("")) }
@@ -46,122 +46,124 @@ fun LoginScreen(navController: NavHostController) {
 
     val openDialog = remember { mutableStateOf(false) }
 
-    var showErrorMessages by remember {
-        mutableStateOf(false)
-    }
+    var showErrorMessages by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .background(Color.White)
-            .padding(20.dp)
+            .padding(SceenArea)
     ){
+        //Кнопка назад
         Row(horizontalArrangement = Arrangement.Start){
             Image(
                 painter = rememberVectorPainter(image = Icons.Filled.ArrowBack),
-                contentDescription = " ",
+                contentDescription = stringResource(id = R.string.imageDescriptionBack),
                 colorFilter = ColorFilter.tint(Color.Transparent)
             )
         }
+
+        // Изображение главной иконки
         Image(
             painter = painterResource(id = R.drawable.icon),
-            contentDescription = "App's Icon",
+            contentDescription = stringResource(id = R.string.iconDescription),
             modifier = Modifier.fillMaxWidth()
         )
 
+        // Заголовок страницы
         Text(
-            text = "Login",
+            text = stringResource(id = R.string.login),
             color = mainColor,
-            fontSize = 48.sp,
-            modifier = Modifier.padding(top = 12.dp)
+            fontSize = largeFont,
+            modifier = Modifier.padding(top = ComponentDiffNormal)
         )
 
+        // Логин
         Column(modifier = Modifier.fillMaxWidth()) {
             TextField(
                 value = email.value,
-                onValueChange = {
-                    email.value = it
-                },
-                placeholder = { Text(text = "Email") },
+                onValueChange = { email.value = it },
+                placeholder = { Text(text = stringResource(id = R.string.email)) },
                 keyboardOptions = KeyboardOptions( keyboardType = KeyboardType.Email ),
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(Color.White)
-                    .padding(top = 12.dp),
+                    .padding(top = ComponentDiffNormal),
                 singleLine = true,
                 colors = TextFieldDefaults.textFieldColors(
                     backgroundColor = Color.Transparent,
                     focusedIndicatorColor = Color.LightGray,
                     unfocusedIndicatorColor = Color.LightGray
                 ),
-                leadingIcon = { Icon(Icons.Filled.Email, contentDescription = "Email icon") },
+                leadingIcon = { Icon(Icons.Filled.Email, contentDescription = stringResource(id = R.string.imageDescriptionEmail)) },
                 isError = !isEmailValid.value && showErrorMessages,
             )
+
             if (showErrorMessages && !isEmailValid.value)
                 Text(
-                    text = "Incorrectly email",
+                    text = stringResource(id = R.string.emailError),
                     color = MaterialTheme.colors.error,
                     style = MaterialTheme.typography.caption,
                     modifier = Modifier
-                        .padding(start = 8.dp)
+                        .padding(start = ErrorStart)
                         .fillMaxWidth()
                 )
         }
 
+        // Пароль
         Column(modifier = Modifier.fillMaxWidth()) {
             TextField(
                 value = password.value,
-                onValueChange = {
-                    password.value = it
-                },
-                placeholder = { Text("Password") },
+                onValueChange = { password.value = it },
+                placeholder = { Text(text = stringResource(id = R.string.password)) },
                 keyboardOptions = KeyboardOptions( keyboardType = KeyboardType.Password ),
                 visualTransformation = if (isHidePass.value) PasswordVisualTransformation() else VisualTransformation.None,
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(Color.White)
-                    .padding(top = 12.dp),
+                    .padding(top = ComponentDiffNormal),
                 singleLine = true,
                 colors = TextFieldDefaults.textFieldColors(
                     backgroundColor = Color.Transparent,
                     focusedIndicatorColor = Color.LightGray,
                     unfocusedIndicatorColor = Color.LightGray
                 ),
-                leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = "Password icon") },
+                leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = stringResource(id = R.string.imageDescriptionPassword)) },
                 trailingIcon = { Icon(
                     imageVector = ImageVector.vectorResource(id = if (isHidePass.value) R.drawable.eye_hide else R.drawable.eye_show),
-                    contentDescription = "Password Hide icon",
-                    modifier = Modifier.clickable(onClick = {
-                        isHidePass.value = !isHidePass.value
-                    })
+                    contentDescription = stringResource(id = R.string.imageDescriptionHideShowPassword),
+                    modifier = Modifier.clickable(onClick = { isHidePass.value = !isHidePass.value })
                 )},
                 isError = !isPasswordValid.value && showErrorMessages
             )
 
             if (showErrorMessages && !isPasswordValid.value)
                 Text(
-                    text = "Incorrectly password",
+                    text = stringResource(id = R.string.passwordError),
                     color = MaterialTheme.colors.error,
                     style = MaterialTheme.typography.caption,
                     modifier = Modifier
-                        .padding(start = 8.dp)
+                        .padding(start = ErrorStart)
                         .fillMaxWidth()
                 )
         }
 
+        // Ссылка на страницу забыл пароль
         Row(
             horizontalArrangement = Arrangement.End,
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(
-                text = "Forgot password?",
+                text = stringResource(id = R.string.forgotPassword),
                 modifier = Modifier
-                    .padding(top = 6.dp)
+                    .padding(top = TextTopSmall)
                     .clickable { navController.navigate(route = NavRoute.ForgotPassword.route) },
                 color = linkColor
             )
         }
+
+        // Кнопка входа
         Button(
             onClick = {
                 //navController.navigate(NavRoute.Main.route)
@@ -189,60 +191,48 @@ fun LoginScreen(navController: NavHostController) {
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 25.dp),
-            shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(
-                backgroundColor = mainColor
-            )
+                .padding(top = ComponentDiffLarge),
+            shape = RoundedCornerShape(size = largeShape),
+            colors = ButtonDefaults.buttonColors( backgroundColor = mainColor),
         ) {
-            Text( text = "Login", color = Color.White, modifier = Modifier.padding(6.dp))
+            Text( text = stringResource(id = R.string.login), color = Color.White, modifier = Modifier.padding(ButtonArea))
         }
+
+        // Ссылка на страницу регистрации
         Row (
             horizontalArrangement = Arrangement.Center,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 6.dp)
+                .padding(top = ComponentDiffSmall)
         ){
-            Text(text = "New to Logistics? ", color = Color.Gray)
-            Text(
-                text = " Register",
-                color = linkColor,
-                modifier = Modifier.clickable { navController.navigate(route = NavRoute.SignUp.route) }
+            Text(text = stringResource(id = R.string.loginMsgRegister) + " ", color = Color.Gray)
+            Text(text = stringResource(id = R.string.loginMsgRegisterLink),
+                 color = linkColor,
+                 modifier = Modifier.clickable { navController.navigate(route = NavRoute.SignUp.route) }
             )
         }
     }
 
-    //AlertDialog
+    // Диалоговое окно
     if (openDialog.value) {
         AlertDialog(
             onDismissRequest = { openDialog.value = false },
-            title = {
-                Text(
-                    text = "Error",
-                    color = Color.Red
-                )
-            },
-            text = {
-                Column() {
-                    Text(
-                        text  = "Invalid Email or password"
-                    )
-                }
-            },
+            title = { Text(text = stringResource(id = R.string.error), color = Color.Red) },
+            text = { Text( text  = stringResource(id = R.string.loginErrorMsg) ) },
             buttons = {
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(start = 8.dp, end = 8.dp, bottom = 8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(all = alertDialogArea)
+                        .padding(top = 0.dp),
                     horizontalArrangement = Arrangement.End
                 ) {
                     Button(
                         onClick = { openDialog.value = false },
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            backgroundColor = mainColor
-                        ),
-
+                        shape = RoundedCornerShape(largeShape),
+                        colors = ButtonDefaults.buttonColors( backgroundColor = mainColor ),
                     ) {
-                        Text( text = "Okay", color = Color.White, modifier = Modifier.padding(6.dp))
+                        Text( text = stringResource(id = R.string.alertOkay), color = Color.White, modifier = Modifier.padding(all = TextTopSmall))
                     }
                 }
             }
