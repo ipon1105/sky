@@ -6,10 +6,10 @@ import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.navigation.NavHostController
 import com.example.sky.ui.theme.mainColor
@@ -21,28 +21,25 @@ fun MainScreen(navController: NavHostController)
 
     //ImageVector.vectorResource(R.drawable.)
     Scaffold(
-        topBar = {
-
-        },
         bottomBar = {
             BottomNavigation(backgroundColor = mainColor) {
                 BottomNavigationItem(
                     selected = bottomState.value == "List",
                     onClick = { bottomState.value = "List"},
                     label = { Text(text = "List", color = Color.White)},
-                    icon = { Icon(imageVector = ImageVector.vectorResource(id = R.drawable.list), contentDescription = "List Icon", tint = Color.White)},
+                    icon = { Icon(imageVector = ImageVector.vectorResource(id = R.drawable.list), contentDescription = stringResource(id = R.string.imageDescriptionList), tint = Color.White)},
                 )
                 BottomNavigationItem(
                     selected = bottomState.value == "Map",
                     onClick = { bottomState.value = "Map"},
                     label = { Text(text = "Map", color = Color.White)},
-                    icon = { Icon(imageVector = ImageVector.vectorResource(id = R.drawable.map), contentDescription = "Map Icon", tint = Color.White)},
+                    icon = { Icon(imageVector = ImageVector.vectorResource(id = R.drawable.map), contentDescription = stringResource(id = R.string.imageDescriptionMap), tint = Color.White)},
                 )
                 BottomNavigationItem(
                     selected = bottomState.value == "Account",
                     onClick = { bottomState.value = "Account"},
                     label = { Text(text = "Account", color = Color.White)},
-                    icon = { Icon(imageVector = ImageVector.vectorResource(id = R.drawable.account), contentDescription = "Account Icon", tint = Color.White)},
+                    icon = { Icon(imageVector = ImageVector.vectorResource(id = R.drawable.account), contentDescription = stringResource(id = R.string.imageDescriptionAccount), tint = Color.White)},
                 )
             }
         },

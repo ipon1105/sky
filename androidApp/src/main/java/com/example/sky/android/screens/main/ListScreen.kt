@@ -17,12 +17,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.sky.android.models.FlatModel
+import com.example.sky.ui.theme.*
 
 @Composable
 fun ListScreen() {
@@ -43,18 +45,18 @@ fun ListScreen() {
             onValueChange = {
                 search.value = it
             },
-            placeholder = { Text(text = "Search") },
+            placeholder = { Text(text = stringResource(id = R.string.search)) },
             modifier = Modifier
                 .fillMaxWidth()
                 .background(Color.White)
-                .padding(top = 12.dp),
+                .padding(top = ComponentDiffNormal),
             singleLine = true,
             colors = TextFieldDefaults.textFieldColors(
                 backgroundColor = Color.Transparent,
                 focusedIndicatorColor = Color.LightGray,
                 unfocusedIndicatorColor = Color.LightGray
             ),
-            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Email icon") },
+            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = stringResource(id = R.string.imageDescriptionEmail)) },
         )
 
         list.add(element = FlatModel(id = 1u, address = "Ул. Калинина, д. 102, кв. 10", photo = "photo1", owner = 1u, pricePerDay = 1u, description = "Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1Description1"))
@@ -90,30 +92,37 @@ fun ListScreen() {
 
 @Composable
 fun FlatElementList(el: FlatModel){
+    val cardElevation = 10.dp
+    val cardSize = 100.dp
 
+    // ModelView
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 10.dp),
-        shape = RoundedCornerShape(12.dp),
-        elevation = 10.dp
+            .padding(vertical = verticalNormal),
+        shape = RoundedCornerShape(size = largeShape),
+        elevation = cardElevation
     ) {
         Row(
         ) {
+            //Изображение квартиры
             Image(
                 //TODO: Сделать загрузку изображений из базы данных firebase
                 imageVector = ImageVector.vectorResource(id = R.drawable.map),
-                contentDescription = "Flat Image",
+                contentDescription = stringResource(id = R.string.imageDescriptionFlatPhoto),
                 modifier = Modifier
-                    .size(100.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .padding(vertical = 10.dp),
+                    .size(cardSize)
+                    .clip(RoundedCornerShape(size = largeShape))
+                    .padding(vertical = verticalNormal),
             )
             
             Column(
-                modifier = Modifier.padding(top = 10.dp, start = 10.dp, end = 10.dp),
+                modifier = Modifier
+                    .padding(all = ComponentAll10)
+                    .padding(bottom = 0.dp),
             ) {
                 Row(modifier = Modifier.fillMaxWidth()) {
+                    // Название квартиры (улица)
                     Row(modifier = Modifier.fillMaxWidth(0.9f)){
                         Text(
                             text = el.address.uppercase(),
@@ -123,14 +132,16 @@ fun FlatElementList(el: FlatModel){
                         )
                     }
 
+                    //Статус квартиры
                     Box(
                         modifier = Modifier.fillMaxWidth(),
                         contentAlignment = Alignment.CenterEnd
                     ){
                         MyCircle()
-                        //TODO: Нарисовать круг состояния
                     }
                 }
+
+                // Описание квартиры
                 Text(
                     modifier = Modifier
                         .fillMaxHeight(),
@@ -140,20 +151,19 @@ fun FlatElementList(el: FlatModel){
                     softWrap = true
                 )
             }
-            
         }
     }
 }
 
 @Composable
 fun MyCircle(){
-    Canvas(modifier = Modifier.size(20.dp), onDraw = {
+    Canvas(modifier = Modifier.size(canvasShape), onDraw = {
         drawCircle(color = Color.Red)
     })
 }
 
 @Composable
 @Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
-fun preview(){
+fun Preview(){
     ListScreen()
 }

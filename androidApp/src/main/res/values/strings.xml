@@ -9,6 +9,11 @@
     <string name="imageDescriptionPassword">Password icon</string>
     <string name="imageDescriptionHideShowPassword">Password Hide icon</string>
     <string name="imageDescriptionNickname">Nickname icon</string>
+    <string name="imageDescriptionMyPhoto">My Photo</string>
+    <string name="imageDescriptionFlatPhoto">Flat Photo</string>
+    <string name="imageDescriptionMap">Map Icon</string>
+    <string name="imageDescriptionList">List Icon</string>
+    <string name="imageDescriptionAccount">Account Icon</string>
 
     <!-- General -->
     <string name="phone">Phone</string>
@@ -21,6 +26,9 @@
     <string name="forgotPassword">Forgot Password?</string>
     <string name="error">Error</string>
     <string name="nickname">Nickname</string>
+    <string name="phoneNumber">Phone number</string>
+    <string name="id">ID</string>
+    <string name="search">Search</string>
 
     <!-- ForgotPassword -->
     <string name="forgotPasswordMsg">Don\'t worry! It happens. Please enter the address associated with your account.</string>

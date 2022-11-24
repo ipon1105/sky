@@ -9,16 +9,17 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.example.sky.ui.theme.ScreenArea
+import com.example.sky.ui.theme.analyticsBig
+import com.example.sky.ui.theme.smallFont
 
 @Composable
 fun AccountScreen() {
@@ -27,52 +28,55 @@ fun AccountScreen() {
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .background(Color.White)
-            .padding(20.dp)
+            .padding(ScreenArea)
     ) {
+        // Кнопка назад
         Row(
             horizontalArrangement = Arrangement.End,
             modifier = Modifier.fillMaxWidth()
         ) {
             Image(
                 painter = rememberVectorPainter(image = Icons.Filled.Settings),
-                contentDescription = "Icon back",
+                contentDescription = stringResource(id = R.string.imageDescriptionBack),
                 modifier = Modifier.clickable { /*TODO: Сделать переход на настройки*/ }
             )
         }
 
+        // Вызовы Аналитических блоков (сейчас только один)
         AccountCard()
     }
 }
 
 @Composable
 fun AccountCard(){
-
-    val id = remember{mutableStateOf(1)}
-    val nickname = remember{mutableStateOf("myNickname")}
-    val phone_number = remember{mutableStateOf("myPhoneNumber")}
+    val cardElevation = 5.dp
+    val privacyTop = 10.dp
+    val privacyStart = 5.dp
+    val photoPadding = 5.dp
+    val photoSize = 100.dp
 
     Card(
-        shape = RoundedCornerShape(15.dp),
-        modifier = Modifier.fillMaxWidth(), elevation = 5.dp){
+        shape = RoundedCornerShape(size = analyticsBig),
+        modifier = Modifier.fillMaxWidth(), elevation = cardElevation){
         Row(modifier = Modifier.fillMaxWidth()) {
+            //Изображение человека
             Image(
                 painter = rememberVectorPainter(image = ImageVector.vectorResource(id = R.drawable.account)),
-                contentDescription = "My Photo",
+                contentDescription = stringResource(id = R.string.imageDescriptionMyPhoto),
                 modifier = Modifier
-                    .size(100.dp)
-                    .padding(5.dp)
+                    .size(photoSize)
+                    .padding(photoPadding)
             )
 
-            Column(modifier = Modifier.padding(top = 10.dp, start = 5.dp)) {
-
+            //Личная информация
+            Column(modifier = Modifier.padding(top = privacyTop, start = privacyStart)) {
                 Text(
-                    text = "Nickname",
-                    fontSize = 18.sp,
+                    text = stringResource(id = R.string.imageDescriptionNickname),
+                    fontSize = smallFont,
                     fontWeight = FontWeight.Bold
                 )
-                Text("Id")
-                Text("PhoneNumber")
-
+                Text(stringResource(id = R.string.id))
+                Text(stringResource(id = R.string.phoneNumber))
             }
         }
     }

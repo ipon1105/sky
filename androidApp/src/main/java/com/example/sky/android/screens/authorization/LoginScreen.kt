@@ -53,7 +53,7 @@ fun LoginScreen(navController: NavHostController) {
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .background(Color.White)
-            .padding(SceenArea)
+            .padding(ScreenArea)
     ){
         //Кнопка назад
         Row(horizontalArrangement = Arrangement.Start){
