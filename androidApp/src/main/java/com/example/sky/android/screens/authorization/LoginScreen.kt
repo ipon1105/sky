@@ -30,22 +30,37 @@ import androidx.navigation.NavHostController
 import com.example.sky.navigation.NavRoute
 import com.example.sky.ui.theme.*
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
 
 @Composable
 fun LoginScreen(navController: NavHostController) {
+    val db = FirebaseFirestore.getInstance()
+    db.collection("user")
+        .get()
+        .addOnCompleteListener{
+            Log.d("Firestore", "complete")
+        }
+        .addOnCanceledListener {
+            Log.d("Firestore", "canceled")
+        }
+        .addOnFailureListener{
+            Log.d("Firestore", "fail")
+        }
+        .addOnSuccessListener{
+            Log.d("Firestore", "success")
+        }
+    //
+
     //TODO: Сделать проверку интернета
     val auth = Firebase.auth
 
-    val isHidePass = remember{ mutableStateOf(true) }
-    val email = remember { mutableStateOf(TextFieldValue("")) }
-    val password = remember { mutableStateOf(TextFieldValue("")) }
-
-    val isEmailValid = derivedStateOf { Patterns.EMAIL_ADDRESS.matcher(email.value.text).matches() }
-    val isPasswordValid = derivedStateOf { password.value.text.length > 7 }
-
-    val openDialog = remember { mutableStateOf(false) }
-
+    var isHidePass by remember{ mutableStateOf(true) }
+    var email by remember { mutableStateOf(TextFieldValue("")) }
+    var password by remember { mutableStateOf(TextFieldValue("")) }
+    val isEmailValid by derivedStateOf { Patterns.EMAIL_ADDRESS.matcher(email.text).matches() }
+    val isPasswordValid by derivedStateOf { password.text.length > 7 }
+    var openDialog by remember { mutableStateOf(false) }
     var showErrorMessages by remember { mutableStateOf(false) }
 
     Column(
@@ -82,8 +97,8 @@ fun LoginScreen(navController: NavHostController) {
         // Логин
         Column(modifier = Modifier.fillMaxWidth()) {
             TextField(
-                value = email.value,
-                onValueChange = { email.value = it },
+                value = email,
+                onValueChange = { email = it },
                 placeholder = { Text(text = stringResource(id = R.string.email)) },
                 keyboardOptions = KeyboardOptions( keyboardType = KeyboardType.Email ),
                 modifier = Modifier
@@ -97,10 +112,10 @@ fun LoginScreen(navController: NavHostController) {
                     unfocusedIndicatorColor = Color.LightGray
                 ),
                 leadingIcon = { Icon(Icons.Filled.Email, contentDescription = stringResource(id = R.string.imageDescriptionEmail)) },
-                isError = !isEmailValid.value && showErrorMessages,
+                isError = !isEmailValid && showErrorMessages,
             )
 
-            if (showErrorMessages && !isEmailValid.value)
+            if (showErrorMessages && !isEmailValid)
                 Text(
                     text = stringResource(id = R.string.emailError),
                     color = MaterialTheme.colors.error,
@@ -114,11 +129,11 @@ fun LoginScreen(navController: NavHostController) {
         // Пароль
         Column(modifier = Modifier.fillMaxWidth()) {
             TextField(
-                value = password.value,
-                onValueChange = { password.value = it },
+                value = password,
+                onValueChange = { password = it },
                 placeholder = { Text(text = stringResource(id = R.string.password)) },
                 keyboardOptions = KeyboardOptions( keyboardType = KeyboardType.Password ),
-                visualTransformation = if (isHidePass.value) PasswordVisualTransformation() else VisualTransformation.None,
+                visualTransformation = if (isHidePass) PasswordVisualTransformation() else VisualTransformation.None,
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(Color.White)
@@ -131,14 +146,14 @@ fun LoginScreen(navController: NavHostController) {
                 ),
                 leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = stringResource(id = R.string.imageDescriptionPassword)) },
                 trailingIcon = { Icon(
-                    imageVector = ImageVector.vectorResource(id = if (isHidePass.value) R.drawable.eye_hide else R.drawable.eye_show),
+                    imageVector = ImageVector.vectorResource(id = if (isHidePass) R.drawable.eye_hide else R.drawable.eye_show),
                     contentDescription = stringResource(id = R.string.imageDescriptionHideShowPassword),
-                    modifier = Modifier.clickable(onClick = { isHidePass.value = !isHidePass.value })
+                    modifier = Modifier.clickable(onClick = { isHidePass = !isHidePass })
                 )},
-                isError = !isPasswordValid.value && showErrorMessages
+                isError = !isPasswordValid && showErrorMessages
             )
 
-            if (showErrorMessages && !isPasswordValid.value)
+            if (showErrorMessages && !isPasswordValid)
                 Text(
                     text = stringResource(id = R.string.passwordError),
                     color = MaterialTheme.colors.error,
@@ -167,17 +182,17 @@ fun LoginScreen(navController: NavHostController) {
         Button(
             onClick = {
                 //navController.navigate(NavRoute.Main.route)
-                if (isEmailValid.value && isPasswordValid.value){
+                if (isEmailValid && isPasswordValid){
                     auth.signInWithEmailAndPassword(
-                        email.value.text,
-                        password.value.text
+                        email.text,
+                        password.text
                     ).addOnCompleteListener {
                         if (it.isSuccessful) {
                             Log.i("LoginAuthorization", "Log is Complete and successful")
                             navController.navigate(NavRoute.Main.route)
                         } else {
                             Log.e("LoginAuthorization", "Log is Complete and not successful", it.exception)
-                            openDialog.value = true
+                            openDialog = true
                         }
                     }.addOnCanceledListener {
                         Log.i("LoginAuthorization", "Log is Cancel")
@@ -214,9 +229,9 @@ fun LoginScreen(navController: NavHostController) {
     }
 
     // Диалоговое окно
-    if (openDialog.value) {
+    if (openDialog) {
         AlertDialog(
-            onDismissRequest = { openDialog.value = false },
+            onDismissRequest = { openDialog = false },
             title = { Text(text = stringResource(id = R.string.error), color = Color.Red) },
             text = { Text( text  = stringResource(id = R.string.loginErrorMsg) ) },
             buttons = {
@@ -228,7 +243,7 @@ fun LoginScreen(navController: NavHostController) {
                     horizontalArrangement = Arrangement.End
                 ) {
                     Button(
-                        onClick = { openDialog.value = false },
+                        onClick = { openDialog = false },
                         shape = RoundedCornerShape(largeShape),
                         colors = ButtonDefaults.buttonColors( backgroundColor = mainColor ),
                     ) {
