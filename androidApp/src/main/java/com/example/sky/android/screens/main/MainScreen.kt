@@ -23,10 +23,12 @@ fun MainScreen(navController: NavHostController)
     Scaffold(
         bottomBar = {
             BottomNavigation(backgroundColor = mainColor) {
+                //TODO: Слегка увеличить размер иконок
                 BottomNavigationItem(
                     selected = bottomState.value == "List",
                     onClick = { bottomState.value = "List"},
                     label = { Text(text = "List", color = Color.White)},
+                    //TODO: Иконка не из того сета. Взять одинаковые иконки
                     icon = { Icon(imageVector = ImageVector.vectorResource(id = R.drawable.list), contentDescription = stringResource(id = R.string.imageDescriptionList), tint = Color.White)},
                 )
                 BottomNavigationItem(
