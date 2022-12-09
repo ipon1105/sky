@@ -2,5 +2,6 @@ package com.example.sky.ui.theme
 
 import androidx.compose.ui.unit.sp
 
-val smallFont = 18.sp
-val largeFont = 48.sp
+val SmallFont = 14.sp
+val NormalFont = 18.sp
+val VeryLargeFont = 48.sp

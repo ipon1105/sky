@@ -14,7 +14,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavHostController
 import com.example.sky.ui.theme.ComponentDiffNormal
 import com.example.sky.ui.theme.ScreenArea
-import com.example.sky.ui.theme.largeFont
+import com.example.sky.ui.theme.VeryLargeFont
 import com.example.sky.ui.theme.mainColor
 
 @Composable
@@ -40,7 +40,7 @@ fun PrivacyPolicyScreen(navController: NavHostController) {
         Text(
             text = stringResource(id = R.string.privacyPolicy),
             color = mainColor,
-            fontSize = largeFont,
+            fontSize = VeryLargeFont,
             modifier = Modifier.padding(top = ComponentDiffNormal)
         )
 

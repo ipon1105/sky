@@ -2,6 +2,7 @@ package com.example.sky.ui.theme
 
 import androidx.compose.ui.unit.dp
 
+val shortShape = 8.dp
 val largeShape = 12.dp
 
 val analyticsBig = 15.dp

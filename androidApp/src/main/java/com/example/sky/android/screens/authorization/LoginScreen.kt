@@ -90,7 +90,7 @@ fun LoginScreen(navController: NavHostController) {
         Text(
             text = stringResource(id = R.string.login),
             color = mainColor,
-            fontSize = largeFont,
+            fontSize = VeryLargeFont,
             modifier = Modifier.padding(top = ComponentDiffNormal)
         )
 

@@ -86,7 +86,7 @@ fun SignUpScreen(navController: NavHostController) {
         Text(
             text = stringResource(id = R.string.signUp),
             color = mainColor,
-            fontSize = largeFont,
+            fontSize = VeryLargeFont,
             modifier = Modifier.padding(top = ComponentDiffNormal)
         )
 

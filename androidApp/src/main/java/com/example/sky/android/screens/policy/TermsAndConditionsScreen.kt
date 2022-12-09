@@ -14,7 +14,7 @@ import androidx.navigation.NavHostController
 import com.example.sky.android.R
 import com.example.sky.ui.theme.ComponentDiffNormal
 import com.example.sky.ui.theme.ScreenArea
-import com.example.sky.ui.theme.largeFont
+import com.example.sky.ui.theme.VeryLargeFont
 import com.example.sky.ui.theme.mainColor
 
 @Composable
@@ -39,7 +39,7 @@ fun TermsAndConditionsScreen(navController: NavHostController) {
         Text(
             text = stringResource(id = R.string.termsAndConditions),
             color = mainColor,
-            fontSize = largeFont,
+            fontSize = VeryLargeFont,
             modifier = Modifier.padding(top = ComponentDiffNormal)
         )
 

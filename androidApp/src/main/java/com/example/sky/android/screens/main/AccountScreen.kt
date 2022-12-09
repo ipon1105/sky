@@ -19,7 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.sky.ui.theme.ScreenArea
 import com.example.sky.ui.theme.analyticsBig
-import com.example.sky.ui.theme.smallFont
+import com.example.sky.ui.theme.NormalFont
 
 @Composable
 fun AccountScreen() {
@@ -72,7 +72,7 @@ fun AccountCard(){
             Column(modifier = Modifier.padding(top = privacyTop, start = privacyStart)) {
                 Text(
                     text = stringResource(id = R.string.imageDescriptionNickname),
-                    fontSize = smallFont,
+                    fontSize = NormalFont,
                     fontWeight = FontWeight.Bold
                 )
                 Text(stringResource(id = R.string.id))

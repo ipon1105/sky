@@ -55,7 +55,7 @@ fun ForgotPasswordScreen(navController: NavHostController) {
         Text(
             text = stringResource(id = R.string.forgotPassword),
             color = mainColor,
-            fontSize = largeFont,
+            fontSize = VeryLargeFont,
             modifier = Modifier.padding(top = ComponentDiffNormal)
         )
 
