@@ -37,7 +37,7 @@ dependencies {
     implementation("com.google.firebase:firebase-firestore-ktx:24.4.1")
 
     val composeVersion = "1.2.1"
-    implementation("androidx.compose.ui:ui:$composeVersion")
+    implementation("androidx.compose.ui:ui:1.3.2")
     implementation("androidx.compose.ui:ui-tooling:$composeVersion")
     implementation("androidx.compose.ui:ui-tooling-preview:$composeVersion")
     implementation("androidx.compose.foundation:foundation:$composeVersion")
@@ -62,4 +62,14 @@ dependencies {
     //Зависимость для ImageSlider
     implementation("com.google.accompanist:accompanist-pager:0.28.0")
     implementation("com.google.accompanist:accompanist-pager-indicators:0.28.0")
+
+    //Зависимость для изображений
+    implementation("io.coil-kt:coil-compose:1.3.1")
+//    implementation ("com.github.skydoves:landscapist-glide:2.1.0")
+//    implementation("com.github.bumptech.glide:glide:4.11.0")
+
+    // Зависимость для календаря
+    implementation ("io.github.boguszpawlowski.composecalendar:composecalendar:1.0.2")
+    implementation ("io.github.boguszpawlowski.composecalendar:kotlinx-datetime:1.0.2")
+
 }
