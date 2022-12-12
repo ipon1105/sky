@@ -17,9 +17,13 @@
     <string name="imageDescriptionEdit">Edit Icon</string>
     <string name="imageDescriptionDelete">Delete Icon</string>
     <string name="imageDescriptionAdd">Add Icon</string>
+    <string name="imageDescriptionArrowDropDown">Arrow Drop Down Icon</string>
 
     <!-- General -->
     <string name="phone">Phone</string>
+    <string name="list">List</string>
+    <string name="map">Map</string>
+    <string name="account">Account</string>
     <string name="login">Login</string>
     <string name="email">Email</string>
     <string name="password">Password</string>
@@ -37,6 +41,8 @@
     <string name="termsAndConditions">Terms &amp; Conditions</string>
     <string name="cancel">Cancel</string>
     <string name="apply">Apply</string>
+    <string name="lightTheme">Light Theme</string>
+    <string name="darkTheme">Dark Theme</string>
 
     <!-- ForgotPassword -->
     <string name="forgotPasswordMsg">Don\'t worry! It happens. Please enter the address associated with your account.</string>
@@ -84,5 +90,22 @@
     <string name="descriptionTemplate">Describe your apartment </string>
     <string name="descriptionError">Description is too high</string>
     <string name="flatEditorBackWarning">All data not received will be lost, do you want to continue?</string>
+
+    <!-- FlatInfoScreen -->
+    <string name="flatInfoMoreDetails">Apartment\'s Info</string>
+
+    <!-- ListScreen -->
+    <string name="free">Free</string>
+    <string name="busy">Busy</string>
+    <string name="dirty">Dirty</string>
+
+    <!-- SettingScreen -->
+    <string name="genSetting">General Settings</string>
+    <string name="genNotifications">Notifications</string>
+    <string name="genTelephone">Hide telephone number</string>
+    <string name="workerSetting">Worker Settings</string>
+    <string name="workerSeeFree">Workers see free apartments</string>
+    <string name="workerSeeDirty">Workers see dirty apartments</string>
+    <string name="workerSeeBusy">Workers see busy apartments</string>
 
 </resources>

@@ -21,3 +21,7 @@ val verticalNormal = 10.dp
 val ComponentAll10 = 10.dp
 
 val iconSizeNormal = 20.dp
+
+val CardPaddingNormal = 20.dp
+val CardTopPaddingNormal = 20.dp
+val CardBottomPaddingNormal = 20.dp

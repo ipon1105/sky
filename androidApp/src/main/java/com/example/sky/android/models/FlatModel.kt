@@ -31,4 +31,5 @@ val flatList = listOf(
     FlatModel(id = 17u, address = "address17", photo = "photo17", owner = 17u, pricePerDay = 17u, description = "Description17"),
     FlatModel(id = 18u, address = "address18", photo = "photo18", owner = 18u, pricePerDay = 18u, description = "Description18"),
     FlatModel(id = 19u, address = "address19", photo = "photo19", owner = 19u, pricePerDay = 19u, description = "Description19"),
+    null,
 )
