@@ -35,6 +35,10 @@ android {
 dependencies {
     implementation(project(":shared"))
     implementation("com.google.firebase:firebase-firestore-ktx:24.4.1")
+    implementation("com.google.firebase:firebase-database-ktx:20.1.0")
+    implementation("com.google.firebase:firebase-firestore:24.4.1")
+    implementation("com.google.firebase:firebase-storage:20.1.0")
+    implementation("com.google.firebase:firebase-storage-ktx:20.1.0")
 
     val composeVersion = "1.2.1"
     implementation("androidx.compose.ui:ui:1.3.2")

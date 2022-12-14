@@ -10,7 +10,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -28,20 +27,14 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.sky.android.R
+import com.example.sky.android.models.FlatEditorViewModel
 import com.example.sky.ui.theme.*
 import com.google.accompanist.pager.*
 
 @ExperimentalPagerApi
 @Composable
-private fun ViewPagerSlider(){
+private fun ViewPagerSlider(viewModel: FlatEditorViewModel){
     // Из одной квартиры выносит список квартир, которые собирается отображать (в виде ссылок для скачивания)
-    val imageList = listOf(
-        "Photo_1",
-        "Photo_2",
-        "Photo_3",
-        "Photo_4",
-        "Photo_5",
-    )
     val maxHorizontalPagerHeight = 250.dp
 
     val pagerState = rememberPagerState(initialPage = 0)
@@ -60,8 +53,10 @@ private fun ViewPagerSlider(){
     }
     */
 
-    Column(modifier = Modifier.fillMaxWidth().padding(top = ComponentDiffLarge)) {
-        HorizontalPager(count = imageList.size,state = pagerState, modifier = Modifier.height(height = maxHorizontalPagerHeight)) { page ->
+    Column(modifier = Modifier
+        .fillMaxWidth()
+        .padding(top = ComponentDiffLarge)) {
+        HorizontalPager(count = viewModel.state.value.photos.size, state = pagerState, modifier = Modifier.height(height = maxHorizontalPagerHeight)) { page ->
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -69,7 +64,7 @@ private fun ViewPagerSlider(){
                 shape = RoundedCornerShape(canvasShape),
                 backgroundColor = DarkGray
             ) {
-                val newImgae = imageList[page]
+                val newImgae = viewModel.state.value.photos[page]
                 Box(modifier = Modifier.fillMaxSize()){
                     //TODO: Добавить загрузку иконки (Image(painter = painterResource(id = arr.photo)))
                     //TODO: Растянуть изображение на всю ширину
@@ -85,24 +80,17 @@ private fun ViewPagerSlider(){
         }
 
         // Точечный индикатор под слайдером изображений
-        HorizontalPagerIndicator(pagerState = pagerState,modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = verticalNormal))
+        HorizontalPagerIndicator(pagerState = pagerState,modifier = Modifier
+            .align(Alignment.CenterHorizontally)
+            .padding(top = verticalNormal))
 
         // Панель под Слайдером
-        Row (modifier = Modifier.fillMaxWidth().padding(top = verticalNormal), horizontalArrangement = Arrangement.Center){
+        Row (modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = verticalNormal), horizontalArrangement = Arrangement.Center){
 
             // Вспомогательная панель
             Row(modifier = Modifier.align(Alignment.CenterVertically)) {
-                // Изображение для Редактирования
-                Image(
-                    imageVector = Icons.Filled.Edit,
-                    contentDescription = stringResource(id = R.string.imageDescriptionEdit),
-                    modifier = Modifier.size(iconSizeNormal),
-                    colorFilter = ColorFilter.tint(FlatYellow),
-                )
-
-                // Пробел
-                Spacer(modifier = Modifier.width(ComponentDiffSmall))
-
                 // Изображение для удаления
                 Image(
                     imageVector = Icons.Filled.Delete,
@@ -129,234 +117,241 @@ private fun ViewPagerSlider(){
 @SuppressLint("UnrememberedMutableState")
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun FlatEditorScreen(navController: NavHostController) {
+fun FlatEditorScreen(navController: NavHostController, viewModel: FlatEditorViewModel) {
     var isEditable by remember { mutableStateOf(false) }
     var isEditableDialogShow by remember { mutableStateOf(false) }
 
-        Scaffold(
-            modifier = Modifier
-                .fillMaxSize(),
-            backgroundColor = HeaderMainColorMain,
-            drawerShape =  RoundedCornerShape(
-                bottomStart = topBarCornerShape,
-                bottomEnd = topBarCornerShape
-            ),
-            topBar = {
-                //Кнопка назад
-                Row(
+    Scaffold(
+        modifier = Modifier
+            .fillMaxSize(),
+        backgroundColor = HeaderMainColorMain,
+        drawerShape =  RoundedCornerShape(
+            bottomStart = topBarCornerShape,
+            bottomEnd = topBarCornerShape
+        ),
+        topBar = {
+            //Кнопка назад
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        color = Color.White,
+                        shape = RoundedCornerShape(
+                            bottomEnd = topBarCornerShape,
+                            bottomStart = topBarCornerShape
+                        )
+                    ),
+                horizontalArrangement = Arrangement.Start
+            ){
+                Image(
+                    painter = rememberVectorPainter(image = Icons.Filled.ArrowBack),
+                    contentDescription = stringResource(id = R.string.imageDescriptionBack),
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .background(
-                            color = Color.White,
-                            shape = RoundedCornerShape(
-                                bottomEnd = topBarCornerShape,
-                                bottomStart = topBarCornerShape
-                            )
-                        ),
-                    horizontalArrangement = Arrangement.Start
-                ){
-                    Image(
-                        painter = rememberVectorPainter(image = Icons.Filled.ArrowBack),
-                        contentDescription = stringResource(id = R.string.imageDescriptionBack),
-                        modifier = Modifier.clickable {
+                        .clickable {
                             // Диалоговое окно
                             if (isEditable) {
                                 isEditableDialogShow = true
                             } else
                                 navController.popBackStack()
                         }
-                            .padding(all = ComponentDiffNormal)
-                    )
-                }
-            },
-            content = {
+                        .padding(all = ComponentDiffNormal)
+                )
+            }
+        },
+        content = {
 
-                //Главное содержимое
+            //Главное содержимое
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = ScreenArea)
+                    .padding(top = it.calculateTopPadding())
+                    .verticalScroll(rememberScrollState())
+            ){
+                // Пробел
+                Spacer(modifier = Modifier.padding(top = ScreenArea))
+
+                // Внутреннее содержимое
                 Column(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = ScreenArea)
-                        .padding(top = it.calculateTopPadding())
-                        .verticalScroll(rememberScrollState())
-                ){
-                    // Пробел
-                    Spacer(modifier = Modifier.padding(top = ScreenArea))
+                        .fillMaxWidth()
+                        .background(
+                            color = Color.White,
+                            shape = RoundedCornerShape(largeShape)
+                        ),
+                ) {
+                    // TODO: Сделать проверку на корректность адреса
+                    val maxDescriptionHeight = 150.dp
+                    val maxAddressLength = 255
+                    val maxCostLength = 16
+                    val maxDescriptionLength = 512
+                    var address by remember { mutableStateOf("") }
+                    var cost by remember { mutableStateOf("") }
+                    var description by remember { mutableStateOf("") }
+                    val isAddressValid by derivedStateOf { address.length < maxAddressLength }
+                    val isCostValid by derivedStateOf { cost.length < maxCostLength }
+                    val isDescriptionValid by derivedStateOf { description.length < maxDescriptionLength }
 
-                    // Внутреннее содержимое
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(
-                                color = Color.White,
-                                shape = RoundedCornerShape(largeShape)
+
+                    // Список изображений
+                    ViewPagerSlider(viewModel)
+
+                    // Адрес
+                    Column(modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(ComponentDiffNormal)) {
+                        // Текст подсказка
+                        Text(
+                            text = stringResource(id = R.string.address),
+                            fontSize = SmallFont,
+                            textAlign = TextAlign.Start,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+
+                        // Поле ввода Адреса
+                        TextField(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(Color.White),
+                            value = address,
+                            onValueChange =
+                            { address = it; viewModel.state.value.address = address; isEditable = true },
+                            placeholder = { Text(text = stringResource(id = R.string.address), fontSize = SmallFont) },
+                            singleLine = true,
+                            colors = TextFieldDefaults.textFieldColors(
+                                cursorColor = Color.Black,
+                                backgroundColor = lightGray,
+                                disabledLabelColor = lightGray,
+                                focusedIndicatorColor = Transparent,
+                                unfocusedIndicatorColor = Transparent
                             ),
-                    ) {
-                        // TODO: Сделать проверку на корректность адреса
-                        val maxDescriptionHeight = 150.dp
-                        val maxAddressLength = 255
-                        val maxCostLength = 16
-                        val maxDescriptionLength = 512
-                        var address by remember { mutableStateOf("") }
-                        var cost by remember { mutableStateOf("") }
-                        var description by remember { mutableStateOf("") }
-                        val isAddressValid by derivedStateOf { address.length < maxAddressLength }
-                        val isCostValid by derivedStateOf { cost.length < maxCostLength }
-                        val isDescriptionValid by derivedStateOf { description.length < maxDescriptionLength }
+                            shape = RoundedCornerShape(shortShape),
+                            isError = !isAddressValid,
+                            trailingIcon = {
+                                if (address.isNotEmpty())
+                                    IconButton(onClick = { address = ""; viewModel.state.value.address = address; isEditable = true }) {
+                                        Icon(imageVector = Icons.Outlined.Close, contentDescription = null)
+                                    }
+                            }
+                        )
 
+                        // Тексты под полем ввода
+                        Row(modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = ComponentDiffSmallSmall)){
+                            val errorColor = if (!isAddressValid) MaterialTheme.colors.error else Transparent
 
-                        // Список изображений
-                        ViewPagerSlider()
-
-                        // Адрес
-                        Column(modifier = Modifier.fillMaxWidth().padding(ComponentDiffNormal)) {
-                            // Текст подсказка
+                            // Ошибка
                             Text(
-                                text = stringResource(id = R.string.address),
-                                fontSize = SmallFont,
+                                text = stringResource(id = R.string.addressError),
+                                color = errorColor,
+                                style = MaterialTheme.typography.caption,
+                                modifier = Modifier
+                                    .padding(start = ErrorStart)
+                                    .fillMaxWidth(0.75f),
                                 textAlign = TextAlign.Start,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                             )
 
-                            // Поле ввода Адреса
-                            TextField(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(Color.White),
-                                value = address,
-                                onValueChange =
-                                { address = it; isEditable = true },
-                                placeholder = { Text(text = stringResource(id = R.string.address), fontSize = SmallFont) },
-                                singleLine = true,
-                                colors = TextFieldDefaults.textFieldColors(
-                                    cursorColor = Color.Black,
-                                    backgroundColor = lightGray,
-                                    disabledLabelColor = lightGray,
-                                    focusedIndicatorColor = Transparent,
-                                    unfocusedIndicatorColor = Transparent
-                                ),
-                                shape = RoundedCornerShape(shortShape),
-                                isError = !isAddressValid,
-                                trailingIcon = {
-                                    if (address.isNotEmpty())
-                                        IconButton(onClick = { address = ""; isEditable = true }) {
-                                            Icon(imageVector = Icons.Outlined.Close, contentDescription = null)
-                                        }
-                                }
+                            // Количество допустимых символов
+                            Text(
+                                text = "${address.length} / $maxAddressLength",
+                                modifier = Modifier.fillMaxWidth(),
+                                textAlign = TextAlign.End,
+                                color = Color.Black,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
                             )
-
-                            // Тексты под полем ввода
-                            Row(modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = ComponentDiffSmallSmall)){
-                                val errorColor = if (!isAddressValid) MaterialTheme.colors.error else Transparent
-
-                                // Ошибка
-                                Text(
-                                    text = stringResource(id = R.string.addressError),
-                                    color = errorColor,
-                                    style = MaterialTheme.typography.caption,
-                                    modifier = Modifier
-                                        .padding(start = ErrorStart)
-                                        .fillMaxWidth(0.75f),
-                                    textAlign = TextAlign.Start,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                )
-
-                                // Количество допустимых символов
-                                Text(
-                                    text = "${address.length} / $maxAddressLength",
-                                    modifier = Modifier.fillMaxWidth(),
-                                    textAlign = TextAlign.End,
-                                    color = Color.Black,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                )
-                            }
-
                         }
 
-                        // Стоимость  уборки
-                        Column(modifier = Modifier.fillMaxWidth().padding(ComponentDiffNormal)) {
+                    }
 
-                            // Текст подсказка
-                            Text(
-                                text = stringResource(id = R.string.cleaningCost),
-                                fontSize = SmallFont,
-                                textAlign = TextAlign.Start,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                            )
+                    // Стоимость  уборки
+                    Column(modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(ComponentDiffNormal)) {
 
-                            // Поле ввода Адреса
-                            TextField(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(Color.White),
-                                value = cost,
-                                onValueChange = { cost = it; isEditable = true },
-                                placeholder = { Text(text = stringResource(id = R.string.cleaningCostTemplate), fontSize = SmallFont) },
-                                singleLine = true,
-                                colors = TextFieldDefaults.textFieldColors(
-                                    cursorColor = Color.Black,
-                                    backgroundColor = lightGray,
-                                    disabledLabelColor = lightGray,
-                                    focusedIndicatorColor = Transparent,
-                                    unfocusedIndicatorColor = Transparent
-                                ),
-                                shape = RoundedCornerShape(shortShape),
-                                isError = !isCostValid,
-                                trailingIcon = {
-                                    if (cost.isNotEmpty())
-                                        IconButton(onClick = { cost = ""; isEditable = true }) {
-                                            Icon(imageVector = Icons.Outlined.Close, contentDescription = null)
-                                        }
-                                },
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            )
+                        // Текст подсказка
+                        Text(
+                            text = stringResource(id = R.string.cleaningCost),
+                            fontSize = SmallFont,
+                            textAlign = TextAlign.Start,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
 
-                            // Тексты под полем ввода
-                            Row(modifier = Modifier
+                        // Поле ввода Адреса
+                        TextField(
+                            modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(top = ComponentDiffSmallSmall)){
-                                val errorColor = if (!isCostValid) MaterialTheme.colors.error else Transparent
+                                .background(Color.White),
+                            value = cost,
+                            onValueChange = { cost = it; viewModel.state.value.cleaningCost = cost; isEditable = true },
+                            placeholder = { Text(text = stringResource(id = R.string.cleaningCostTemplate), fontSize = SmallFont) },
+                            singleLine = true,
+                            colors = TextFieldDefaults.textFieldColors(
+                                cursorColor = Color.Black,
+                                backgroundColor = lightGray,
+                                disabledLabelColor = lightGray,
+                                focusedIndicatorColor = Transparent,
+                                unfocusedIndicatorColor = Transparent
+                            ),
+                            shape = RoundedCornerShape(shortShape),
+                            isError = !isCostValid,
+                            trailingIcon = {
+                                if (cost.isNotEmpty())
+                                    IconButton(onClick = { cost = ""; viewModel.state.value.cleaningCost = cost; isEditable = true }) {
+                                        Icon(imageVector = Icons.Outlined.Close, contentDescription = null)
+                                    }
+                            },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        )
 
-                                // Ошибка
-                                Text(
-                                    text = stringResource(id = R.string.cleaningCostError),
-                                    color = errorColor,
-                                    style = MaterialTheme.typography.caption,
-                                    modifier = Modifier
-                                        .padding(start = ErrorStart)
-                                        .fillMaxWidth(0.75f),
-                                    textAlign = TextAlign.Start,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                )
+                        // Тексты под полем ввода
+                        Row(modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = ComponentDiffSmallSmall)){
+                            val errorColor = if (!isCostValid) MaterialTheme.colors.error else Transparent
 
-                                // Количество допустимых символов
-                                Text(
-                                    text = "${cost.length} / $maxCostLength",
-                                    modifier = Modifier.fillMaxWidth(),
-                                    textAlign = TextAlign.End,
-                                    color = Color.Black,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                )
-                            }
-                        }
-
-                        // Описание
-                        Column(modifier = Modifier.fillMaxWidth().padding(ComponentDiffNormal)){
-                            // Текст подсказка
+                            // Ошибка
                             Text(
-                                text = stringResource(id = R.string.description),
-                                fontSize = SmallFont,
+                                text = stringResource(id = R.string.cleaningCostError),
+                                color = errorColor,
+                                style = MaterialTheme.typography.caption,
+                                modifier = Modifier
+                                    .padding(start = ErrorStart)
+                                    .fillMaxWidth(0.75f),
                                 textAlign = TextAlign.Start,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                             )
+
+                            // Количество допустимых символов
+                            Text(
+                                text = "${cost.length} / $maxCostLength",
+                                modifier = Modifier.fillMaxWidth(),
+                                textAlign = TextAlign.End,
+                                color = Color.Black,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                        }
+                    }
+
+                    // Описание
+                    Column(modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(ComponentDiffNormal)){
+                        // Текст подсказка
+                        Text(
+                            text = stringResource(id = R.string.description),
+                            fontSize = SmallFont,
+                            textAlign = TextAlign.Start,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
 
                             // Поле ввода Описания
                             TextField(
@@ -365,7 +360,7 @@ fun FlatEditorScreen(navController: NavHostController) {
                                     .height(maxDescriptionHeight)
                                     .background(Color.White),
                                 value = description,
-                                onValueChange = { description = it; isEditable = true },
+                                onValueChange = { description = it; viewModel.state.value.description = description; isEditable = true },
                                 placeholder = { Text(text = stringResource(id = R.string.descriptionTemplate), fontSize = SmallFont) },
                                 colors = TextFieldDefaults.textFieldColors(
                                     cursorColor = Color.Black,
@@ -378,24 +373,24 @@ fun FlatEditorScreen(navController: NavHostController) {
                                 isError = !isDescriptionValid,
                             )
 
-                            // Тексты под полем ввода
-                            Row(modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = ComponentDiffSmallSmall)){
-                                val errorColor = if (!isDescriptionValid) MaterialTheme.colors.error else Transparent
+                        // Тексты под полем ввода
+                        Row(modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = ComponentDiffSmallSmall)){
+                            val errorColor = if (!isDescriptionValid) MaterialTheme.colors.error else Transparent
 
-                                // Ошибка
-                                Text(
-                                    text = stringResource(id = R.string.descriptionError),
-                                    color = errorColor,
-                                    style = MaterialTheme.typography.caption,
-                                    modifier = Modifier
-                                        .padding(start = ErrorStart)
-                                        .fillMaxWidth(0.75f),
-                                    textAlign = TextAlign.Start,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                )
+                            // Ошибка
+                            Text(
+                                text = stringResource(id = R.string.descriptionError),
+                                color = errorColor,
+                                style = MaterialTheme.typography.caption,
+                                modifier = Modifier
+                                    .padding(start = ErrorStart)
+                                    .fillMaxWidth(0.75f),
+                                textAlign = TextAlign.Start,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
 
                                 // Количество допустимых символов
                                 Text(
@@ -408,83 +403,86 @@ fun FlatEditorScreen(navController: NavHostController) {
                                 )
                             }
 
-                        }
-
-                        // Кнопки управления
-                        Row(modifier = Modifier.fillMaxWidth().padding(ComponentDiffLarge), horizontalArrangement = Arrangement.SpaceEvenly){
-                            // Кнопка Отмены
-                            Button(
-                                modifier = Modifier.weight(1f),
-                                shape = RoundedCornerShape(size = largeShape),
-                                colors = ButtonDefaults.buttonColors( backgroundColor = FlatRed ),
-                                onClick = {
-                                    if (isAddressValid && isCostValid && isDescriptionValid){
-                                        //TODO: Сделать отмену и вернуть исходные данные
-                                    }
-                                },
-                            ) {
-                                Text(text = stringResource(id = R.string.cancel), color = Color.White, modifier = Modifier.padding(all = ButtonArea))
-                            }
-
-                            // Пробел
-                            Spacer(modifier = Modifier.weight(0.4f))
-
-                            // Кнопка Действия
-                            Button(
-                                modifier = Modifier.weight(1f),
-                                shape = RoundedCornerShape(size = largeShape),
-                                colors = ButtonDefaults.buttonColors( backgroundColor = FlatGreen ),
-                                onClick = {
-                                    if (isAddressValid && isCostValid && isDescriptionValid){
-                                        //TODO: Принять изменения и внести их в базу данных
-                                    }
-                                },
-                            ) {
-                                Text(text = stringResource(id = R.string.apply), color = Color.White, modifier = Modifier.padding(all = ButtonArea), )
-                            }
-                        }
-
-                        //Дилоговое окно
-                        if (isEditableDialogShow)
-                            AlertDialog(
-                                onDismissRequest = { navController.popBackStack() },
-                                title = { Text(text = stringResource(id = R.string.warning), color = Color.Yellow) },
-                                text = { Text( text  = stringResource(id = R.string.flatEditorBackWarning) ) },
-                                buttons = {
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(all = alertDialogArea)
-                                            .padding(top = 0.dp),
-                                        horizontalArrangement = Arrangement.End
-                                    ) {
-                                        Button(
-                                            onClick = { isEditableDialogShow = false; navController.popBackStack() },
-                                            shape = RoundedCornerShape(largeShape),
-                                            colors = ButtonDefaults.buttonColors( backgroundColor = mainColor ),
-                                        ) {
-                                            Text( text = stringResource(id = R.string.alertYes), color = Color.White, modifier = Modifier.padding(all = TextTopSmall))
-                                        }
-                                        Spacer(modifier = Modifier.width(10.dp))
-                                        Button(
-                                            onClick = { isEditableDialogShow = false },
-                                            shape = RoundedCornerShape(largeShape),
-                                            colors = ButtonDefaults.buttonColors( backgroundColor = mainColor ),
-                                        ) {
-                                            Text( text = stringResource(id = R.string.alertNo), color = Color.White, modifier = Modifier.padding(all = TextTopSmall))
-                                        }
-                                    }
-                                }
-                            )
                     }
 
-                    // Пробел
-                    Spacer(modifier = Modifier.padding(bottom = ScreenArea))
+                    // Кнопки управления
+                    Row(modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(ComponentDiffLarge), horizontalArrangement = Arrangement.SpaceEvenly){
+                        // Кнопка Отмены
+                        Button(
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(size = largeShape),
+                            colors = ButtonDefaults.buttonColors( backgroundColor = FlatRed ),
+                            onClick = {
+                                if (isAddressValid && isCostValid && isDescriptionValid){
+                                    //TODO: Сделать отмену и вернуть исходные данные
+                                }
+                            },
+                        ) {
+                            Text(text = stringResource(id = R.string.cancel), color = Color.White, modifier = Modifier.padding(all = ButtonArea))
+                        }
+
+                        // Пробел
+                        Spacer(modifier = Modifier.weight(0.4f))
+
+                        // Кнопка Действия
+                        Button(
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(size = largeShape),
+                            colors = ButtonDefaults.buttonColors( backgroundColor = FlatGreen ),
+                            onClick = {
+                                if (isAddressValid && isCostValid && isDescriptionValid) {
+                                    viewModel.updateFlat()
+                                    isEditable = true
+                                }
+                            },
+                        ) {
+                            Text(text = stringResource(id = R.string.apply), color = Color.White, modifier = Modifier.padding(all = ButtonArea), )
+                        }
+                    }
+
+                    //Дилоговое окно
+                    if (isEditableDialogShow)
+                        AlertDialog(
+                            onDismissRequest = { navController.popBackStack() },
+                            title = { Text(text = stringResource(id = R.string.warning), color = Color.Yellow) },
+                            text = { Text( text  = stringResource(id = R.string.flatEditorBackWarning) ) },
+                            buttons = {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(all = alertDialogArea)
+                                        .padding(top = 0.dp),
+                                    horizontalArrangement = Arrangement.End
+                                ) {
+                                    Button(
+                                        onClick = { isEditableDialogShow = false; navController.popBackStack() },
+                                        shape = RoundedCornerShape(largeShape),
+                                        colors = ButtonDefaults.buttonColors( backgroundColor = mainColor ),
+                                    ) {
+                                        Text( text = stringResource(id = R.string.alertYes), color = Color.White, modifier = Modifier.padding(all = TextTopSmall))
+                                    }
+                                    Spacer(modifier = Modifier.width(10.dp))
+                                    Button(
+                                        onClick = { isEditableDialogShow = false },
+                                        shape = RoundedCornerShape(largeShape),
+                                        colors = ButtonDefaults.buttonColors( backgroundColor = mainColor ),
+                                    ) {
+                                        Text( text = stringResource(id = R.string.alertNo), color = Color.White, modifier = Modifier.padding(all = TextTopSmall))
+                                    }
+                                }
+                            }
+                        )
                 }
 
-
-
+                // Пробел
+                Spacer(modifier = Modifier.padding(bottom = ScreenArea))
             }
-        )
+
+
+
+        }
+    )
 
 }
