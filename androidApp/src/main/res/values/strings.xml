@@ -8,7 +8,6 @@
     <string name="imageDescriptionBack">Back icon</string>
     <string name="imageDescriptionPassword">Password icon</string>
     <string name="imageDescriptionHideShowPassword">Password Hide icon</string>
-    <string name="imageDescriptionNickname">Nickname icon</string>
     <string name="imageDescriptionMyPhoto">My Photo</string>
     <string name="imageDescriptionFlatPhoto">Flat Photo</string>
     <string name="imageDescriptionMap">Map Icon</string>
@@ -18,6 +17,7 @@
     <string name="imageDescriptionDelete">Delete Icon</string>
     <string name="imageDescriptionAdd">Add Icon</string>
     <string name="imageDescriptionArrowDropDown">Arrow Drop Down Icon</string>
+    <string name="imageDescriptionSetting">Arrow Drop Down Icon</string>
 
     <!-- General -->
     <string name="phone">Phone</string>
@@ -25,6 +25,9 @@
     <string name="map">Map</string>
     <string name="account">Account</string>
     <string name="login">Login</string>
+    <string name="name">Name</string>
+    <string name="surname">Surname</string>
+    <string name="patronymic">Patronymic</string>
     <string name="email">Email</string>
     <string name="password">Password</string>
     <string name="emailError">Incorrectly email</string>
@@ -43,6 +46,10 @@
     <string name="apply">Apply</string>
     <string name="lightTheme">Light Theme</string>
     <string name="darkTheme">Dark Theme</string>
+    <string name="setting">Setting</string>
+    <string name="logout">Logout</string>
+    <string name="workerSelect">I am Worker</string>
+    <string name="administratorSelect">I am Administrator</string>
 
     <!-- ForgotPassword -->
     <string name="forgotPasswordMsg">Don\'t worry! It happens. Please enter the address associated with your account.</string>
@@ -70,9 +77,9 @@
     <string name="signUpPrivacyPolicy">Privacy Policy </string>
     <string name="signUpAgree">By signing up, you\'re agree to our </string>
     <string name="signUpTC">Terms &amp; Conditions </string>
-    <string name="signUpNicknameLittleError">Little nickname</string>
-    <string name="signUpNicknameLargeError">Large nickname</string>
-    <string name="signUpNicknameNumberError">The nickname must not contain numbers</string>
+    <string name="signUpLittleError">is little</string>
+    <string name="signUpLargeError">is large </string>
+    <string name="signUpNumberError">must not contain numbers</string>
 
     <!-- Privacy Policy -->
     <string name="privacyPolicyText">Privacy Policy Text.</string>
