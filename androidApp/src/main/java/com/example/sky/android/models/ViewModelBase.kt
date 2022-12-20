@@ -91,6 +91,7 @@ suspend fun createFlatInFirestore(data: Flat, admin: Admin):String{
 // Получаем модель квартиры из базы данных
 suspend fun getAdminFromFirestore(adminId: String): Admin {
     var admin = Admin()
+    Log.d(TAG, "admin: $adminId")
 
     try {
         Firebase.firestore.collection("Admin").document(adminId).get()
@@ -131,4 +132,37 @@ suspend fun updateAdminInFirestore(adminId: String, data: Admin){
     } catch (e: FirebaseFirestoreException){
         Log.d(TAG, "updateAdminInFirestore: $e")
     }
+}
+
+// Изменяем модель квартиры в базе данных
+suspend fun getFlatListFromFirestore(adminId: String) : List<Flat> {
+    val admin = getAdminFromFirestore(adminId)
+    var list: List<Flat> = listOf()
+
+    try {
+        Firebase.firestore.collection("Flat").get()
+            .addOnCompleteListener(){
+                Log.i(TAG, "getFlatListFromFirestore geting is start complete")
+
+                for (i in it.result)
+                    if (admin.flatList.contains(i.id)) {
+                        val f = i.toObject(Flat::class.java)
+                        f.flatId = i.id;
+                        list += f
+                    }
+
+                Log.i(TAG, "getFlatListFromFirestore geting is stop complete")
+                Log.i(TAG, "getFlatListFromFirestore list = $list")
+            }.addOnSuccessListener {
+                Log.i(TAG, "getFlatListFromFirestore get is successful")
+            }.addOnFailureListener{
+                Log.e(TAG, "getFlatListFromFirestore get is fail")
+            }.addOnCanceledListener {
+                Log.e(TAG, "getFlatListFromFirestore get is cancel")
+            }.await()
+    } catch (e: FirebaseFirestoreException){
+        Log.d(TAG, "getFlatListFromFirestore: $e")
+    }
+
+    return list
 }
