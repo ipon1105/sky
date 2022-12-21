@@ -1,36 +1,33 @@
 package com.example.sky.android.screens
 
-import android.util.Log
-import android.util.Patterns
+import android.annotation.SuppressLint
 import com.example.sky.android.R
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.example.sky.navigation.NavRoute
+import com.example.sky.android.composables.*
+import com.example.sky.android.models.authorization.SignUpViewModel
+import com.example.sky.android.utils.connection.ConnectionState
+import com.example.sky.android.utils.connection.connectivityState
 import com.example.sky.ui.theme.*
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 fun consistDigits(str: String): Boolean {
-    //for (i in 0..str.length-1)
     for (i in 0 until str.length)
         if (str[i].isDigit())
             return true
@@ -38,26 +35,15 @@ fun consistDigits(str: String): Boolean {
 }
 
 //@Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalCoroutinesApi::class)
+@SuppressLint("UnrememberedMutableState", "StateFlowValueCalledInComposition")
 @Composable
 fun SignUpScreen(navController: NavHostController) {
-    val auth = Firebase.auth
+    val viewModel = viewModel<SignUpViewModel>()
 
-    val nickname = remember { mutableStateOf(TextFieldValue("")) }
-    val email = remember { mutableStateOf(TextFieldValue("")) }
-    val isHidePass = remember{ mutableStateOf(true) }
-    val isHideProvingPass = remember{ mutableStateOf(true) }
-    val password = remember { mutableStateOf(TextFieldValue("")) }
-    val provingPassword = remember { mutableStateOf(TextFieldValue("")) }
-    val phone = remember { mutableStateOf("") }
-
-    val isEmailValid by derivedStateOf { Patterns.EMAIL_ADDRESS.matcher(email.value.text).matches() }
-    val isHidePassValid by derivedStateOf { password.value.text.length > 7 }
-    val isHideProvingPassValid by derivedStateOf { provingPassword.value.text.length > 7 && password.value.text.equals(provingPassword.value.text)}
-    val isNickNameValid by derivedStateOf { nickname.value.text.length >= 4 && nickname.value.text.length <= 16 && !consistDigits(nickname.value.text) }
-    val isPhoneValid by derivedStateOf { Patterns.PHONE.matcher(phone.value).matches() }
-
-    var showErrorMessages by remember { mutableStateOf(false) }
-    val openDialog = remember { mutableStateOf(false) }
+    // Интернет
+    val connection by connectivityState()
+    val isConnected = connection === ConnectionState.Available
 
     Column(
         modifier = Modifier
@@ -66,12 +52,13 @@ fun SignUpScreen(navController: NavHostController) {
             .background(Color.White)
             .padding(ScreenArea)
     ){
+        //TODO: Заменить верхнее меню на topBar
         //Кнопка назад
         Row(horizontalArrangement = Arrangement.Start){
             Image(
                 painter = rememberVectorPainter(image = Icons.Filled.ArrowBack),
                 contentDescription = stringResource(id = R.string.imageDescriptionBack),
-                modifier = Modifier.clickable { navController.popBackStack() }
+                modifier = Modifier.clickable { viewModel.goToBack(navController = navController) }
             )
         }
 
@@ -90,176 +77,118 @@ fun SignUpScreen(navController: NavHostController) {
             modifier = Modifier.padding(top = ComponentDiffNormal)
         )
 
-        // Никнейм
-        Column(modifier = Modifier.fillMaxWidth()) {
-            TextField(
-                value = nickname.value,
-                onValueChange = { it -> nickname.value = it },
-                placeholder = { Text(stringResource(id = R.string.nickname)) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color.White)
-                    .padding(top = ComponentDiffNormal),
-                singleLine = true,
-                colors = TextFieldDefaults.textFieldColors(
-                    backgroundColor = Color.Transparent,
-                    focusedIndicatorColor = Color.LightGray,
-                    unfocusedIndicatorColor = Color.LightGray
-                ),
-                leadingIcon = { Icon(Icons.Filled.Face, contentDescription = stringResource(id = R.string.imageDescriptionNickname)) },
-                isError = showErrorMessages && !isNickNameValid,
-            )
+        // Имя
+        NameTextFiled(
+            name = viewModel.name,
+            valid = viewModel.isNameValid,
+            isErrorShow = viewModel.showErrorMessages,
+            onValueChange = { viewModel.setName(it) },
+        )
 
-            if (showErrorMessages && !isNickNameValid)
-                Text(
-                    text = stringResource(id = if (nickname.value.text.length < 4) R.string.signUpNicknameLittleError else if (nickname.value.text.length > 16) R.string.signUpNicknameLargeError else R.string.signUpNicknameNumberError),
-                    color = MaterialTheme.colors.error,
-                    style = MaterialTheme.typography.caption,
-                    modifier = Modifier
-                        .padding(start = ErrorStart)
-                        .fillMaxWidth()
-                )
-        }
+        // Фамилия
+        SurnameTextFiled(
+            surname = viewModel.surname,
+            valid = viewModel.isSurnameValid,
+            isErrorShow = viewModel.showErrorMessages,
+            onValueChange = { viewModel.setSurname(it) },
+        )
+
+        // Отчество
+        PatronymicTextFiled(
+            patronymic = viewModel.patronymic,
+            valid = viewModel.isPatronymicValid,
+            isErrorShow = viewModel.showErrorMessages,
+            onValueChange = { viewModel.setPatronymic(it) },
+        )
 
         // Телефон
-        Column(modifier = Modifier.fillMaxWidth()) {
-            TextField(
-                value = phone.value,
-                onValueChange = { it -> phone.value = it },
-                placeholder = { Text(text = stringResource(id = R.string.phone)) },
-                keyboardOptions = KeyboardOptions( keyboardType = KeyboardType.Phone ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color.White)
-                    .padding(top = ComponentDiffNormal),
-                singleLine = true,
-                colors = TextFieldDefaults.textFieldColors(
-                    backgroundColor = Color.Transparent,
-                    focusedIndicatorColor = Color.LightGray,
-                    unfocusedIndicatorColor = Color.LightGray
-                ),
-                leadingIcon = { Icon(Icons.Filled.Phone, contentDescription = stringResource(id = R.string.imageDescriptionPhone)) },
-                isError = showErrorMessages && !isPhoneValid,
-            )
-
-            if (showErrorMessages && ! isPhoneValid)
-                Text(
-                    text = stringResource(id = R.string.phoneError),
-                    color = MaterialTheme.colors.error,
-                    style = MaterialTheme.typography.caption,
-                    modifier = Modifier
-                        .padding(start = ErrorStart)
-                        .fillMaxWidth()
-                )
-        }
+        TelephoneTextField(
+            telephone = viewModel.phone,
+            valid = viewModel.isPhoneValid,
+            isErrorShow = viewModel.showErrorMessages,
+            onValueChange = { viewModel.setPhone(it) }
+        )
 
         // Почта
-        Column(modifier = Modifier.fillMaxWidth()) {
-            TextField(
-                value = email.value,
-                onValueChange = { it -> email.value = it },
-                placeholder = { Text(text = stringResource(id = R.string.email)) },
-                keyboardOptions = KeyboardOptions( keyboardType = KeyboardType.Email ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color.White)
-                    .padding(top = ComponentDiffNormal),
-                singleLine = true,
-                colors = TextFieldDefaults.textFieldColors(
-                    backgroundColor = Color.Transparent,
-                    focusedIndicatorColor = Color.LightGray,
-                    unfocusedIndicatorColor = Color.LightGray
-                ),
-                leadingIcon = { Icon(Icons.Filled.Email, contentDescription = stringResource(id = R.string.imageDescriptionEmail)) },
-                isError = showErrorMessages && !isEmailValid,
-            )
-
-            if (showErrorMessages && ! isEmailValid)
-                Text(
-                    text = stringResource(id = R.string.emailError),
-                    color = MaterialTheme.colors.error,
-                    style = MaterialTheme.typography.caption,
-                    modifier = Modifier
-                        .padding(start = ErrorStart)
-                        .fillMaxWidth()
-                )
-        }
+        EmailTextField(
+            email = viewModel.email,
+            valid = viewModel.isEmailValid,
+            isErrorShow = viewModel.showErrorMessages,
+            onValueChange = { viewModel.setEmail(it) },
+        )
 
         // Пароль 1
-        Column(modifier = Modifier.fillMaxWidth()) {
-            TextField(
-                value = password.value,
-                onValueChange = { it -> password.value = it },
-                placeholder = { Text(stringResource(id = R.string.password)) },
-                keyboardOptions = KeyboardOptions( keyboardType = KeyboardType.Password ),
-                visualTransformation = if (isHidePass.value) PasswordVisualTransformation() else VisualTransformation.None,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color.White)
-                    .padding(top = ComponentDiffNormal),
-                singleLine = true,
-                colors = TextFieldDefaults.textFieldColors(
-                    backgroundColor = Color.Transparent,
-                    focusedIndicatorColor = Color.LightGray,
-                    unfocusedIndicatorColor = Color.LightGray
-                ),
-                leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = stringResource(id = R.string.imageDescriptionPassword)) },
-                trailingIcon = { Icon(
-                    imageVector = ImageVector.vectorResource(id = if (isHidePass.value) R.drawable.eye_hide else R.drawable.eye_show),
-                    contentDescription = stringResource(id = R.string.imageDescriptionHideShowPassword),
-                    modifier = Modifier.clickable(onClick = { isHidePass.value = !isHidePass.value }),
-                )
-                },
-                isError = showErrorMessages && !isHidePassValid,
-            )
-
-            if (showErrorMessages && ! isHidePassValid)
-                Text(
-                    text = stringResource(id = R.string.passwordError),
-                    color = MaterialTheme.colors.error,
-                    style = MaterialTheme.typography.caption,
-                    modifier = Modifier
-                        .padding(start = ErrorStart)
-                        .fillMaxWidth(),
-                )
-        }
+        PasswordTextField(
+            password = viewModel.password,
+            valid = viewModel.isPassValid,
+            isErrorShow = viewModel.showErrorMessages,
+            onValueChange = { viewModel.setPassword(it) },
+        )
 
         // Пароль 2
-        Column(modifier = Modifier.fillMaxWidth()) {
-            TextField(
-                value = provingPassword.value,
-                onValueChange = { it -> provingPassword.value = it },
-                placeholder = { Text(stringResource(id = R.string.signUpRepeatPassword)) },
-                keyboardOptions = KeyboardOptions( keyboardType = KeyboardType.Password ),
-                visualTransformation = if (isHideProvingPass.value) PasswordVisualTransformation() else VisualTransformation.None,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color.White)
-                    .padding(top = ComponentDiffNormal),
-                singleLine = true,
-                colors = TextFieldDefaults.textFieldColors(
-                    backgroundColor = Color.Transparent,
-                    focusedIndicatorColor = Color.LightGray,
-                    unfocusedIndicatorColor = Color.LightGray
-                ),
-                leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = stringResource(id = R.string.imageDescriptionPassword)) },
-                trailingIcon = { Icon(
-                    imageVector = ImageVector.vectorResource(id = if (isHideProvingPass.value) R.drawable.eye_hide else R.drawable.eye_show),
-                    contentDescription = stringResource(id = R.string.imageDescriptionHideShowPassword),
-                    modifier = Modifier.clickable(onClick = { isHideProvingPass.value = !isHideProvingPass.value })
-                )},
-                isError = showErrorMessages && !isHideProvingPassValid,
-            )
+        PasswordTextField(
+            password = viewModel.provingPassword,
+            valid = viewModel.isProvingPassValid,
+            isErrorShow = viewModel.showErrorMessages,
+            onValueChange = { viewModel.setProvingPassword(it) },
+            error = stringResource( id = if (viewModel.password.equals(viewModel.provingPassword)) R.string.passwordError else R.string.signUpPasswordNotSimilarError),
+            placeholder = stringResource(id = R.string.signUpRepeatPassword)
+        )
 
-            if (showErrorMessages && ! isHideProvingPassValid)
+        // Контейрнер групирующий радио кнопки
+        Column(modifier = Modifier
+            .padding(top = ComponentDiffNormal, start = ComponentDiffNormal)
+            .selectableGroup()
+        ) {
+            // Контейнр компонента
+            Row(modifier = Modifier.clickable { viewModel.setStatus(1) }) {
+                // Светлая тема
+                CompositionLocalProvider(LocalMinimumTouchTargetEnforcement provides false){
+                    RadioButton(
+                        selected = viewModel.status == 1,
+                        colors = RadioButtonDefaults.colors(
+                            unselectedColor = DarkGray,
+                            selectedColor = HeaderMainColorMain,
+                        ),
+                        onClick = { viewModel.setStatus(1) },
+                    )
+                }
+
+                // Текс подсказка
                 Text(
-                    text = stringResource( id = if (password.value.text.equals(provingPassword.value.text)) R.string.passwordError else R.string.signUpPasswordNotSimilarError),
-                    color = MaterialTheme.colors.error,
-                    style = MaterialTheme.typography.caption,
+                    text = stringResource(id = R.string.workerSelect),
                     modifier = Modifier
-                        .padding(start = ErrorStart)
-                        .fillMaxWidth()
+                        .align(Alignment.CenterVertically)
+                        .padding(start = ComponentDiffNormal),
+                    color = GrayTextColor
                 )
+            }
+
+            // Контейнр компонента
+            Row(modifier = Modifier
+                .padding(top = ComponentDiffSmall)
+                .clickable { viewModel.setStatus(2) }) {
+                // Тёмная тема
+                CompositionLocalProvider(LocalMinimumTouchTargetEnforcement provides false){
+                    RadioButton(
+                        selected = viewModel.status == 2,
+                        onClick = { viewModel.setStatus(2) },
+                        colors = RadioButtonDefaults.colors(
+                            unselectedColor = DarkGray,
+                            selectedColor = HeaderMainColorMain,
+                        )
+                    )
+                }
+
+                // Текс подсказка
+                Text(
+                    text = stringResource(id = R.string.administratorSelect),
+                    modifier = Modifier
+                        .align(Alignment.CenterVertically)
+                        .padding(start = ComponentDiffNormal),
+                    color = GrayTextColor
+                )
+            }
         }
 
         // Ссылки на Пользовательсткое соглашение и Политику конфиденциальности
@@ -272,7 +201,7 @@ fun SignUpScreen(navController: NavHostController) {
             ) {
                 Text(text = stringResource(id = R.string.signUpAgree) + " ", color = Color.Gray)
                 Text(text = stringResource(id = R.string.signUpTC),
-                     modifier = Modifier.clickable { navController.navigate(route = NavRoute.TermsAndConditions.route) },
+                     modifier = Modifier.clickable { viewModel.goLinkToTC(navController = navController) },
                      color = linkColor
                 )
             }
@@ -282,7 +211,7 @@ fun SignUpScreen(navController: NavHostController) {
             ){
                 Text(text = stringResource(id = R.string.signUpAnd) + " ", color = Color.Gray)
                 Text(text = stringResource(id = R.string.signUpPrivacyPolicy),
-                     modifier = Modifier.clickable { navController.navigate(route = NavRoute.PrivacyPolicy.route) },
+                     modifier = Modifier.clickable { viewModel.goLinkToPrivacyPolicy(navController = navController) },
                      color = linkColor
                 )
             }
@@ -290,29 +219,25 @@ fun SignUpScreen(navController: NavHostController) {
 
         // Кнопка продолжить
         Button(
+            enabled = !viewModel.isAuthLoading,
             onClick = {
-                if (!isEmailValid || !isNickNameValid || !isHidePassValid || !isHideProvingPassValid || !isPhoneValid)
-                    showErrorMessages = true
-                else {
-                    showErrorMessages = false
-                    auth.createUserWithEmailAndPassword(
-                        email.value.text,
-                        password.value.text
-                    ).addOnCompleteListener {
-                        if (it.isSuccessful) {
-                            Log.i("SignUpAuthorization", "SignUp is Complete and successful")
-                            navController.navigate(NavRoute.Main.route)
-                        } else {
-                            Log.e("SignUpAuthorization", "SignUp is Complete and not successful", it.exception)
-                            openDialog.value = true
+                if (!isConnected){
+                    viewModel.setShowDialog(true)
+                } else
+                    if (!viewModel.isEmailValid || !viewModel.isNameValid || !viewModel.isPassValid || !viewModel.isProvingPassValid || !viewModel.isPhoneValid)
+                        viewModel.setShowErrorMessages(true)
+                    else
+                        viewModel.registration(){isSuccessful, msg ->
+                            viewModel.setAuthLoading(false)
+                            if (isSuccessful)
+                                viewModel.login(navController)
+                            else {
+                                viewModel.setShowDialog(true)
+                                viewModel.setDialogMsg(msg)
+                            }
+
                         }
-                    }.addOnCanceledListener {
-                        Log.i("SignUpAuthorization", "SignUp is Cancel")
-                    }.addOnFailureListener {
-                        Log.e("SignUpAuthorization", "SignUp is Fail and failed", it)
-                    }
-                    /*TODO: Сделать продолжене регистрации*/
-                }
+
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -320,7 +245,10 @@ fun SignUpScreen(navController: NavHostController) {
             shape = RoundedCornerShape(largeShape),
             colors = ButtonDefaults.buttonColors(backgroundColor = mainColor)
         ) {
-            Text( text = stringResource(id = R.string.signUpContinue), color = Color.White, modifier = Modifier.padding(ButtonArea))
+            if (viewModel.isAuthLoading)
+                CircularProgressIndicator(color = mainColor)
+            else
+                Text( text = stringResource(id = R.string.signUpContinue), color = Color.White, modifier = Modifier.padding(ButtonArea))
         }
 
         // Ссылка на страницу входа
@@ -333,17 +261,17 @@ fun SignUpScreen(navController: NavHostController) {
             Text(text = stringResource(id = R.string.signUpJoin)+" ", color = Color.Gray)
             Text(text = stringResource(id = R.string.signUpLogin),
                  color = linkColor,
-                 modifier = Modifier.clickable { navController.navigate(route = NavRoute.Login.route) }
+                 modifier = Modifier.clickable { viewModel.goLinkToLogin(navController)}
             )
         }
     }
 
     // Диалоговое окно
-    if (openDialog.value) {
+    if (viewModel.showDialog && isConnected)
         AlertDialog(
-            onDismissRequest = { openDialog.value = false },
-            title = { Text( text = stringResource(id = R.string.error), color = Color.Red) },
-            text = { Text(text  = stringResource(id = R.string.signUpEmailExists)) },
+            onDismissRequest = { viewModel.setShowDialog(false) },
+            title = { Text( text = stringResource(id = R.string.error), color = FlatRed) },
+            text =  { Text( text = viewModel.dialogMsg) },
             buttons = {
                 Row(
                     modifier = Modifier
@@ -353,7 +281,7 @@ fun SignUpScreen(navController: NavHostController) {
                     horizontalArrangement = Arrangement.End
                 ) {
                     Button(
-                        onClick = { openDialog.value = false },
+                        onClick = { viewModel.setShowDialog(false) },
                         shape = RoundedCornerShape(size = largeShape),
                         colors = ButtonDefaults.buttonColors( backgroundColor = mainColor),
                     ) {
@@ -362,5 +290,14 @@ fun SignUpScreen(navController: NavHostController) {
                 }
             }
         )
-    }
+
+    // Сообщение об отсутствие интернета
+    if (viewModel.showDialog && !isConnected)
+        NoInternet(onDismissRequest = {viewModel.setShowDialog(false)}, btnOnClick = {viewModel.setShowDialog(false)})
+
+    // Всплывающие сообщения
+    if (viewModel.isTCError || viewModel.isPrivacyPolicyError || viewModel.isLoginError)
+        mToast(LocalContext.current, stringResource(id = R.string.signUpGoLinkError))
+    if (viewModel.isBackError)
+        mToast(LocalContext.current, stringResource(id = R.string.signUpGoBackError))
 }

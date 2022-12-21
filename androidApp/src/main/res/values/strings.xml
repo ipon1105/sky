@@ -50,6 +50,8 @@
     <string name="logout">Logout</string>
     <string name="workerSelect">I am Worker</string>
     <string name="administratorSelect">I am Administrator</string>
+    <string name="valuesEmpty">Values cannot be empty</string>
+    <string name="noConnection">No internet connection</string>
 
     <!-- ForgotPassword -->
     <string name="forgotPasswordMsg">Don\'t worry! It happens. Please enter the address associated with your account.</string>
@@ -80,6 +82,8 @@
     <string name="signUpLittleError">is little</string>
     <string name="signUpLargeError">is large </string>
     <string name="signUpNumberError">must not contain numbers</string>
+    <string name="signUpGoLinkError">It is not possible to follow the link until registration is over</string>
+    <string name="signUpGoBackError">It is not possible to go to the previous page until registration has ended</string>
 
     <!-- Privacy Policy -->
     <string name="privacyPolicyText">Privacy Policy Text.</string>

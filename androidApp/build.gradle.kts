@@ -39,6 +39,7 @@ dependencies {
     implementation("com.google.firebase:firebase-firestore:24.4.1")
     implementation("com.google.firebase:firebase-storage:20.1.0")
     implementation("com.google.firebase:firebase-storage-ktx:20.1.0")
+    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
 
     val composeVersion = "1.2.1"
     implementation("androidx.compose.ui:ui:1.3.2")
@@ -47,6 +48,11 @@ dependencies {
     implementation("androidx.compose.foundation:foundation:$composeVersion")
     implementation("androidx.compose.material:material:$composeVersion")
     implementation("androidx.activity:activity-compose:1.6.1")
+
+    // Зависимости для работы с viewModels
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.5.1")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.6.0-alpha03")
+
 
     //Зависимость для навигацииы
     implementation("androidx.navigation:navigation-compose:2.5.3")
