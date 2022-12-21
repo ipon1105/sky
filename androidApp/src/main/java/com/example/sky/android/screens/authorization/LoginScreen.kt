@@ -1,67 +1,41 @@
 package com.example.sky.android.screens
 
-import android.util.Log
-import android.util.Patterns
+import android.annotation.SuppressLint
 import com.example.sky.android.R
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Lock
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.example.sky.navigation.NavRoute
+import com.example.sky.android.composables.EmailTextField
+import com.example.sky.android.composables.NoInternet
+import com.example.sky.android.composables.PasswordTextField
+import com.example.sky.android.models.LoginViewModel
+import com.example.sky.android.utils.connection.ConnectionState
+import com.example.sky.android.utils.connection.connectivityState
 import com.example.sky.ui.theme.*
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 
+@OptIn(ExperimentalCoroutinesApi::class)
+@SuppressLint("UnrememberedMutableState")
 @Composable
 fun LoginScreen(navController: NavHostController) {
-    val db = FirebaseFirestore.getInstance()
-    db.collection("user")
-        .get()
-        .addOnCompleteListener{
-            Log.d("Firestore", "complete")
-        }
-        .addOnCanceledListener {
-            Log.d("Firestore", "canceled")
-        }
-        .addOnFailureListener{
-            Log.d("Firestore", "fail")
-        }
-        .addOnSuccessListener{
-            Log.d("Firestore", "success")
-        }
-    //
+    val viewModel = viewModel<LoginViewModel>()
 
-    //TODO: Сделать проверку интернета
-    val auth = Firebase.auth
-
-    var isHidePass by remember{ mutableStateOf(true) }
-    var email by remember { mutableStateOf(TextFieldValue("")) }
-    var password by remember { mutableStateOf(TextFieldValue("")) }
-    val isEmailValid by derivedStateOf { Patterns.EMAIL_ADDRESS.matcher(email.text).matches() }
-    val isPasswordValid by derivedStateOf { password.text.length > 7 }
-    var openDialog by remember { mutableStateOf(false) }
-    var showErrorMessages by remember { mutableStateOf(false) }
+    // Интернет
+    val connection by connectivityState()
+    val isConnected = connection === ConnectionState.Available
 
     Column(
         modifier = Modifier
@@ -95,74 +69,20 @@ fun LoginScreen(navController: NavHostController) {
         )
 
         // Логин
-        Column(modifier = Modifier.fillMaxWidth()) {
-            TextField(
-                value = email,
-                onValueChange = { email = it },
-                placeholder = { Text(text = stringResource(id = R.string.email)) },
-                keyboardOptions = KeyboardOptions( keyboardType = KeyboardType.Email ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color.White)
-                    .padding(top = ComponentDiffNormal),
-                singleLine = true,
-                colors = TextFieldDefaults.textFieldColors(
-                    backgroundColor = Color.Transparent,
-                    focusedIndicatorColor = Color.LightGray,
-                    unfocusedIndicatorColor = Color.LightGray
-                ),
-                leadingIcon = { Icon(Icons.Filled.Email, contentDescription = stringResource(id = R.string.imageDescriptionEmail)) },
-                isError = !isEmailValid && showErrorMessages,
-            )
-
-            if (showErrorMessages && !isEmailValid)
-                Text(
-                    text = stringResource(id = R.string.emailError),
-                    color = MaterialTheme.colors.error,
-                    style = MaterialTheme.typography.caption,
-                    modifier = Modifier
-                        .padding(start = ErrorStart)
-                        .fillMaxWidth()
-                )
-        }
+        EmailTextField(
+            email = viewModel.email,
+            valid = viewModel.isEmailValid,
+            isErrorShow = viewModel.showErrorMessages,
+            onValueChange = { viewModel.setEmail(it) },
+        )
 
         // Пароль
-        Column(modifier = Modifier.fillMaxWidth()) {
-            TextField(
-                value = password,
-                onValueChange = { password = it },
-                placeholder = { Text(text = stringResource(id = R.string.password)) },
-                keyboardOptions = KeyboardOptions( keyboardType = KeyboardType.Password ),
-                visualTransformation = if (isHidePass) PasswordVisualTransformation() else VisualTransformation.None,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color.White)
-                    .padding(top = ComponentDiffNormal),
-                singleLine = true,
-                colors = TextFieldDefaults.textFieldColors(
-                    backgroundColor = Color.Transparent,
-                    focusedIndicatorColor = Color.LightGray,
-                    unfocusedIndicatorColor = Color.LightGray
-                ),
-                leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = stringResource(id = R.string.imageDescriptionPassword)) },
-                trailingIcon = { Icon(
-                    imageVector = ImageVector.vectorResource(id = if (isHidePass) R.drawable.eye_hide else R.drawable.eye_show),
-                    contentDescription = stringResource(id = R.string.imageDescriptionHideShowPassword),
-                    modifier = Modifier.clickable(onClick = { isHidePass = !isHidePass })
-                )},
-                isError = !isPasswordValid && showErrorMessages
-            )
-
-            if (showErrorMessages && !isPasswordValid)
-                Text(
-                    text = stringResource(id = R.string.passwordError),
-                    color = MaterialTheme.colors.error,
-                    style = MaterialTheme.typography.caption,
-                    modifier = Modifier
-                        .padding(start = ErrorStart)
-                        .fillMaxWidth()
-                )
-        }
+        PasswordTextField(
+            password = viewModel.password,
+            valid = viewModel.isPasswordValid,
+            isErrorShow = viewModel.showErrorMessages,
+            onValueChange = { viewModel.setPassword(it) },
+        )
 
         // Ссылка на страницу забыл пароль
         Row(
@@ -173,36 +93,32 @@ fun LoginScreen(navController: NavHostController) {
                 text = stringResource(id = R.string.forgotPassword),
                 modifier = Modifier
                     .padding(top = TextTopSmall)
-                    .clickable { navController.navigate(route = NavRoute.ForgotPassword.route) },
+                    .clickable { viewModel.goLinkToForgotPassword(navController = navController) },
                 color = linkColor
             )
         }
 
         // Кнопка входа
         Button(
+            enabled = !viewModel.isAuthLoading,
             onClick = {
-                //navController.navigate(NavRoute.Main.route)
-                if (isEmailValid && isPasswordValid){
-                    auth.signInWithEmailAndPassword(
-                        email.text,
-                        password.text
-                    ).addOnCompleteListener {
-                        if (it.isSuccessful) {
-                            Log.i("LoginAuthorization", "Log is Complete and successful")
-                            navController.navigate(NavRoute.Main.route)
-                        } else {
-                            Log.e("LoginAuthorization", "Log is Complete and not successful", it.exception)
-                            openDialog = true
+                if (!isConnected){
+                    viewModel.setShowDialog(true)
+                } else
+                    if (!viewModel.isEmailValid || !viewModel.isPasswordValid)
+                        viewModel.setShowErrorMessages(true)
+                    else
+                        viewModel.tryLogin(){isSuccessful, msg ->
+                            viewModel.setAuthLoading(false)
+                            if (isSuccessful)
+                                viewModel.login(navController)
+                            else {
+                                viewModel.setShowDialog(true)
+                                viewModel.setDialogMsg(msg)
+                            }
+
                         }
-                    }.addOnCanceledListener {
-                        Log.i("LoginAuthorization", "Log is Cancel")
-                    }.addOnFailureListener {
-                        Log.e("LoginAuthorization", "Log is Fail and failed", it)
-                    }
-                    showErrorMessages = false
-                }
-                else
-                    showErrorMessages = true
+
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -210,7 +126,10 @@ fun LoginScreen(navController: NavHostController) {
             shape = RoundedCornerShape(size = largeShape),
             colors = ButtonDefaults.buttonColors( backgroundColor = mainColor),
         ) {
-            Text( text = stringResource(id = R.string.login), color = Color.White, modifier = Modifier.padding(ButtonArea))
+            if (viewModel.isAuthLoading)
+                CircularProgressIndicator(color = mainColor)
+            else
+                Text( text = stringResource(id = R.string.login), color = Color.White, modifier = Modifier.padding(ButtonArea))
         }
 
         // Ссылка на страницу регистрации
@@ -223,17 +142,17 @@ fun LoginScreen(navController: NavHostController) {
             Text(text = stringResource(id = R.string.loginMsgRegister) + " ", color = Color.Gray)
             Text(text = stringResource(id = R.string.loginMsgRegisterLink),
                  color = linkColor,
-                 modifier = Modifier.clickable { navController.navigate(route = NavRoute.SignUp.route) }
+                 modifier = Modifier.clickable { viewModel.goLinkToRegister(navController = navController) }
             )
         }
     }
 
     // Диалоговое окно
-    if (openDialog) {
+    if (viewModel.showDialog)
         AlertDialog(
-            onDismissRequest = { openDialog = false },
+            onDismissRequest = { viewModel.setShowDialog(false) },
             title = { Text(text = stringResource(id = R.string.error), color = Color.Red) },
-            text = { Text( text  = stringResource(id = R.string.loginErrorMsg) ) },
+            text = { Text( text = viewModel.dialogMsg ) },
             buttons = {
                 Row(
                     modifier = Modifier
@@ -243,7 +162,7 @@ fun LoginScreen(navController: NavHostController) {
                     horizontalArrangement = Arrangement.End
                 ) {
                     Button(
-                        onClick = { openDialog = false },
+                        onClick = { viewModel.setShowDialog(false) },
                         shape = RoundedCornerShape(largeShape),
                         colors = ButtonDefaults.buttonColors( backgroundColor = mainColor ),
                     ) {
@@ -252,5 +171,8 @@ fun LoginScreen(navController: NavHostController) {
                 }
             }
         )
-    }
+
+    // Сообщение об отсутствие интернета
+    if (viewModel.showDialog && !isConnected)
+        NoInternet(onDismissRequest = {viewModel.setShowDialog(false)}, btnOnClick = {viewModel.setShowDialog(false)})
 }

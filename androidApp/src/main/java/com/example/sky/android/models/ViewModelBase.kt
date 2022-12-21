@@ -93,7 +93,7 @@ suspend fun createFlatInFirestore(data: Flat, admin: Admin, listener: (()->Unit)
 
 // Создать модель квартиры в базе данных
 suspend fun createFlatInFirestore(data: Flat, admin: Admin):String{
-    var id = Firebase.auth.currentUser?.uid ?: ""
+    var id = getUserId()
 
     try {
         data.owner = id
@@ -167,8 +167,8 @@ suspend fun updateAdminInFirestore(adminId: String, data: Admin){
 }
 
 // Изменяем модель квартиры в базе данных
-suspend fun getFlatListFromFirestore(adminId: String) : List<Flat> {
-    val admin = getAdminFromFirestore(adminId)
+suspend fun getFlatListFromFirestore() : List<Flat> {
+    val admin = getAdminFromFirestore(getUserId())
     var list: List<Flat> = listOf()
 
     try {
@@ -208,6 +208,7 @@ suspend fun deleteFlatFromFirestore(flatId: String, listener: (()->Unit)? = null
 
     listener?.invoke()
 }
+
 // Удаляем модель квартиры из базы данных
 suspend fun deleteFlatFromFirestore(flatId: String){
     if (flatId.equals(""))
@@ -259,6 +260,31 @@ suspend fun deleteFlatFromAdminFromFirestore(flatId: String){
 
     } catch (e: FirebaseFirestoreException){
         Log.e(TAG, "deleteFlatFromAdminFromFirestore: $e")
+    }
+}
+
+// Вход в приложение. Возвращает успешность и сообщение,
+// если не успешно, то сообщение несёт в себе ошибку,
+// если успешно, то сообщение вернёт идентификатор
+suspend fun signIn(email: String, password: String, listener: ((isSuccessful: Boolean, msg: String) -> Unit)){
+    try{
+        Firebase.auth.signInWithEmailAndPassword(email, password)
+            .addOnCompleteListener(){
+            Log.i(TAG, "signIn is start complete")
+
+            if (it.isSuccessful && it.result.user != null)
+                listener.invoke(true, it.result.user!!.uid)
+
+            Log.i(TAG, "signIn is stop complete")
+        }.addOnSuccessListener {
+            Log.i(TAG, "signIn is successful")
+        }.addOnFailureListener{
+            Log.e(TAG, "signIn is fail: ${it.message}")
+        }.addOnCanceledListener {
+            Log.e(TAG, "signIn is cancel")
+        }.await()
+    } catch (e: FirebaseFirestoreException){
+        Log.e(TAG, "signIn: $e")
     }
 }
 
