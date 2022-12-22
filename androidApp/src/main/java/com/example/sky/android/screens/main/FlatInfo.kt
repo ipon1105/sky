@@ -87,7 +87,7 @@ fun MoreDetailBlock(viewModel: FlatInfoViewModel){
 
                     // Модель загружается
                     if (viewModel.isFlatLoading)
-                        CircularProgressIndicator(modifier = Modifier.fillMaxSize(), color = mainColor)
+                        CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = mainColor)
 
                     // У модели нет изображений
                     else if (imageList[0].equals("no_image"))
