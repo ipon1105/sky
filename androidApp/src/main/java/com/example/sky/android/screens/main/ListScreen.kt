@@ -19,7 +19,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Transparent
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -227,15 +230,25 @@ fun FlatElementList(el: Flat, navController: NavHostController){
                     .size(cardSize)
                     .background(color = DarkGray, shape = RoundedCornerShape(size = largeShape))
             ){
+                // Изображение по умолчаниюы
+                if (el.photos.size == 0)
+                    Image(
+                        modifier = Modifier.fillMaxSize(),
+                        imageVector = ImageVector.vectorResource(id = R.drawable.no_image),
+                        contentDescription = stringResource(id = R.string.imageDescriptionFlatPhoto),
+                        colorFilter = ColorFilter.tint(Color.White),
+                    )
 
-                Image(
-                    //TODO: Сделать загрузку изображений из базы данных firebase
-                    painter = rememberImagePainter("https://picsum.photos/300/300"),
-                    contentDescription = stringResource(id = R.string.imageDescriptionFlatPhoto),
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clip(RoundedCornerShape(size = largeShape)),
-                )
+                //Изображение из сети
+                else
+                    Image(
+                        //TODO: Сделать загрузку изображений из базы данных firebase
+                        painter = rememberImagePainter("https://picsum.photos/300/300"),
+                        contentDescription = stringResource(id = R.string.imageDescriptionFlatPhoto),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(RoundedCornerShape(size = largeShape)),
+                    )
             }
 
             // Подробнее
