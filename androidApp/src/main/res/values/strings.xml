@@ -52,6 +52,9 @@
     <string name="administratorSelect">I am Administrator</string>
     <string name="valuesEmpty">Values cannot be empty</string>
     <string name="noConnection">No internet connection</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
+    <string name="deletingError">It is not possible to do the action while the deletion process is in progress</string>
 
     <!-- ForgotPassword -->
     <string name="forgotPasswordMsg">Don\'t worry! It happens. Please enter the address associated with your account.</string>

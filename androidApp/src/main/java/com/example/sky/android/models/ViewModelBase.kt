@@ -24,17 +24,18 @@ fun isUserAuth() : Boolean {
 }
 
 // Получаем модель квартиры из базы данных
-suspend fun getFlatFromFirestore(flatId: String): Flat {
+suspend fun getFlatFromFirestore(flatId: String) : Flat {
     var flat = Flat()
 
     try {
         Firebase.firestore.collection("Flat").document(flatId).get()
             .addOnCompleteListener(){ task ->
-                Log.i(TAG, "getFlatFromFirestore load is successful")
+                Log.i(TAG, "getFlatFromFirestore load is complete")
+
                 val document = task.result.toObject(Flat::class.java)
-                if (document != null) {
+                if (document != null)
                     flat = document
-                }
+
             }
             .addOnSuccessListener {
                 Log.i(TAG, "getFlatFromFirestore load is successful")
@@ -50,28 +51,17 @@ suspend fun getFlatFromFirestore(flatId: String): Flat {
     return flat
 }
 
-// Получаем модель квартиры из базы данных
-suspend fun getFlatFromFirestore(flatId: String, listener: (()->Unit)? = null): Flat {
-    val tmp = getFlatFromFirestore(flatId = flatId)
-    listener?.invoke()
-    return tmp
-}
-
 // Изменяем модель квартиры в базе данных
-suspend fun updateFlatToFirestore(flatId: String, data: Flat, listener: (()->Unit)? = null){
-    updateFlatToFirestore(flatId = flatId, data = data)
-    listener?.invoke()
-}
-
-// Изменяем модель квартиры в базе данных
-suspend fun updateFlatToFirestore(flatId: String, data: Flat){
+// если успешно, то сообщение вернёт идентификатор квартиры
+suspend fun updateFlatToFirestore(flatId: String, data: Flat, listener: ((isSuccessful: Boolean, msg: String) -> Unit)){
     try {
         Firebase.firestore
             .collection("Flat")
             .document(flatId)
             .set(data)
             .addOnCompleteListener(){
-                Log.i(TAG, "updateFlatToFirestore update is successful")
+                Log.i(TAG, "updateFlatToFirestore update is complete")
+                listener.invoke(true, flatId)
             }.addOnSuccessListener {
                 Log.i(TAG, "updateFlatToFirestore update is successful")
             }.addOnFailureListener{
@@ -85,14 +75,8 @@ suspend fun updateFlatToFirestore(flatId: String, data: Flat){
 }
 
 // Создать модель квартиры в базе данных
-suspend fun createFlatInFirestore(data: Flat, admin: Admin, listener: (()->Unit)? = null):String{
-    val res = createFlatInFirestore(data = data, admin = admin)
-    listener?.invoke()
-    return res
-}
-
-// Создать модель квартиры в базе данных
-suspend fun createFlatInFirestore(data: Flat, admin: Admin):String{
+// если успешно, то сообщение вернёт идентификатор квартиры
+suspend fun createFlatInFirestore(data: Flat, admin: Admin, listener: (isSuccessful: Boolean, msg: String) -> Unit){
     var id = getUserId()
 
     try {
@@ -100,6 +84,7 @@ suspend fun createFlatInFirestore(data: Flat, admin: Admin):String{
         Firebase.firestore.collection("Flat").add(data)
             .addOnCompleteListener(){
                 id = it.result.id
+                listener.invoke(true, id)
                 Log.i(TAG, "createFlatInFirestore is complete")
             }
             .addOnSuccessListener {
@@ -113,26 +98,100 @@ suspend fun createFlatInFirestore(data: Flat, admin: Admin):String{
     } catch (e: FirebaseFirestoreException){
         Log.e(TAG, "createFlatInFirestore: $e")
     }
-
-    admin.flatList += id
-    updateAdminInFirestore(Firebase.auth.currentUser?.uid ?: "" , admin)
-
-    return id
 }
 
-// Получаем модель квартиры из базы данных
-suspend fun getAdminFromFirestore(adminId: String): Admin {
-    var admin = Admin()
-    Log.d(TAG, "admin: $adminId")
+// Изменяем модель квартиры в базе данных
+// если успешно, то сообщение вернёт идентификатор админа
+suspend fun updateAdminInFirestore(adminId: String, data: Admin, listener: ((isSuccessful: Boolean, msg:String) -> Unit)){
+    try {
+        Firebase.firestore.collection("Admin").document(adminId).set(data)
+            .addOnCompleteListener(){
+                Log.i(TAG, "updateAdminInFirestore save is complete")
+                listener.invoke(true, adminId)
+            }
+            .addOnSuccessListener {
+                Log.i(TAG, "updateAdminInFirestore save is successful")
+            }.addOnFailureListener{
+                Log.e(TAG, "updateAdminInFirestore save is fail")
+            }.addOnCanceledListener {
+                Log.e(TAG, "updateAdminInFirestore save is cancel")
+            }.await()
+    } catch (e: FirebaseFirestoreException){
+        Log.e(TAG, "updateAdminInFirestore: $e")
+    }
+}
+
+// Удаляем модель квартиры из базы данных
+// если не успешно, то сообщение несёт в себе ошибку,
+// если успешно, то сообщение вернёт идентификатор квартиры
+suspend fun deleteFlatFromFirestore(flatId: String, listener: ((isSuccessfull: Boolean, msg: String) -> Unit)){
+    if (flatId.equals("")) {
+        listener.invoke(false, "flatId is empty")
+        return
+    }
 
     try {
-        Firebase.firestore.collection("Admin").document(adminId).get()
+        Firebase.firestore.collection("Flat").document(flatId).delete()
+            .addOnCompleteListener(){
+                Log.i(TAG, "deleteFlatFromFirestore deleting is complete")
+                listener.invoke(true, flatId)
+            }.addOnSuccessListener {
+                Log.i(TAG, "deleteFlatFromFirestore deleting is successful")
+            }.addOnFailureListener{
+                Log.e(TAG, "deleteFlatFromFirestore deleting is fail")
+            }.addOnCanceledListener {
+                Log.e(TAG, "deleteFlatFromFirestore deleting is cancel")
+            }.await()
+    } catch (e: FirebaseFirestoreException){
+        Log.e(TAG, "deleteFlatFromFirestore: $e")
+    }
+
+}
+
+// Удаляем данные из администратора
+// если успешно, то сообщение вернёт идентификатор админа
+suspend fun deleteFlatFromAdminFromFirestore(flatId: String, admin: Admin, listener: ((isSuccessful: Boolean, msg: String) -> Unit)){
+    var newList: List<String> = emptyList()
+
+    admin.flatList.forEach {
+        if (!it.equals(flatId))
+            newList += it
+    }
+    admin.flatList = newList
+
+    try {
+        Firebase.firestore.collection("Admin").document(admin.auth).update("flatList", newList)
+            .addOnCompleteListener(){
+                Log.i(TAG, "deleteFlatFromAdminFromFirestore updating is complete")
+                listener.invoke(true, admin.auth)
+            }.addOnSuccessListener {
+                Log.i(TAG, "deleteFlatFromAdminFromFirestore updating is successful")
+            }.addOnFailureListener{
+                Log.e(TAG, "deleteFlatFromAdminFromFirestore updating is fail")
+            }.addOnCanceledListener {
+                Log.e(TAG, "deleteFlatFromAdminFromFirestore updating is cancel")
+            }.await()
+
+    } catch (e: FirebaseFirestoreException){
+        Log.e(TAG, "deleteFlatFromAdminFromFirestore: $e")
+    }
+}
+
+// Получаем запись администратора из базы данных
+suspend fun getAdminFromFirestore() : Admin{
+    var admin = Admin()
+
+    try {
+        Firebase.firestore.collection("Admin").document(getUserId()).get()
             .addOnCompleteListener(){ task ->
                 Log.i(TAG, "getAdminFromFirestore load is complete")
+
                 val document = task.result.toObject(Admin::class.java)
-                if (document != null) {
+                if (document != null)
                     admin = document
-                }
+
+
+                Log.i(TAG, "getAdminFromFirestore admin: $admin")
             }.addOnSuccessListener {
                 Log.i(TAG, "getAdminFromFirestore save is successful")
             }.addOnFailureListener{
@@ -147,28 +206,8 @@ suspend fun getAdminFromFirestore(adminId: String): Admin {
     return admin
 }
 
-// Изменяем модель квартиры в базе данных
-suspend fun updateAdminInFirestore(adminId: String, data: Admin){
-    try {
-        Firebase.firestore.collection("Admin").document(adminId).set(data)
-            .addOnCompleteListener(){
-                Log.i(TAG, "updateAdminInFirestore save is complete")
-            }
-            .addOnSuccessListener {
-                Log.i(TAG, "updateAdminInFirestore save is successful")
-            }.addOnFailureListener{
-                Log.e(TAG, "updateAdminInFirestore save is fail")
-            }.addOnCanceledListener {
-                Log.e(TAG, "updateAdminInFirestore save is cancel")
-            }.await()
-    } catch (e: FirebaseFirestoreException){
-        Log.e(TAG, "updateAdminInFirestore: $e")
-    }
-}
-
-// Изменяем модель квартиры в базе данных
-suspend fun getFlatListFromFirestore() : List<Flat> {
-    val admin = getAdminFromFirestore(getUserId())
+// Получаем список квартир из администратора
+suspend fun getFlatListFromFirestore(admin: Admin) : List<Flat> {
     var list: List<Flat> = listOf()
 
     try {
@@ -199,99 +238,36 @@ suspend fun getFlatListFromFirestore() : List<Flat> {
     return list
 }
 
-// Удаляем модель квартиры из базы данных
-suspend fun deleteFlatFromFirestore(flatId: String, listener: (()->Unit)? = null){
-    if (flatId.equals(""))
-        return
+// Производит вход и возвращает правду, если успешно
+suspend fun signIn(email: String, password: String) : Boolean{
+    var answer = false
 
-    deleteFlatFromFirestore(flatId = flatId)
-
-    listener?.invoke()
-}
-
-// Удаляем модель квартиры из базы данных
-suspend fun deleteFlatFromFirestore(flatId: String){
-    if (flatId.equals(""))
-        return
-
-    try {
-        Firebase.firestore.collection("Flat").document(flatId).delete()
-            .addOnCompleteListener(){
-                Log.i(TAG, "deleteFlatFromFirestore deleting is complete")
-            }.addOnSuccessListener {
-                Log.i(TAG, "deleteFlatFromFirestore deleting is successful")
-            }.addOnFailureListener{
-                Log.e(TAG, "deleteFlatFromFirestore deleting is fail")
-            }.addOnCanceledListener {
-                Log.e(TAG, "deleteFlatFromFirestore deleting is cancel")
-            }.await()
-    } catch (e: FirebaseFirestoreException){
-        Log.e(TAG, "deleteFlatFromFirestore: $e")
-    }
-    deleteFlatFromAdminFromFirestore(flatId = flatId)
-}
-
-// Удаляем данные из администратора
-suspend fun deleteFlatFromAdminFromFirestore(flatId: String){
-    val id = Firebase.auth.currentUser?.uid
-    val admin = id?.let { getAdminFromFirestore(it) }
-
-    if (admin == null)
-        return
-
-    var newList: List<String> = emptyList()
-    admin.flatList.forEach {
-        if (!it.equals(flatId))
-            newList += it
-    }
-    admin.flatList = newList
-
-    try {
-        Firebase.firestore.collection("Admin").document(admin.auth).update("flatList", newList)
-            .addOnCompleteListener(){
-                Log.i(TAG, "deleteFlatFromAdminFromFirestore updating is complete")
-            }.addOnSuccessListener {
-                Log.i(TAG, "deleteFlatFromAdminFromFirestore updating is successful")
-            }.addOnFailureListener{
-                Log.e(TAG, "deleteFlatFromAdminFromFirestore updating is fail")
-            }.addOnCanceledListener {
-                Log.e(TAG, "deleteFlatFromAdminFromFirestore updating is cancel")
-            }.await()
-
-    } catch (e: FirebaseFirestoreException){
-        Log.e(TAG, "deleteFlatFromAdminFromFirestore: $e")
-    }
-}
-
-// Вход в приложение. Возвращает успешность и сообщение,
-// если не успешно, то сообщение несёт в себе ошибку,
-// если успешно, то сообщение вернёт идентификатор
-suspend fun signIn(email: String, password: String, listener: ((isSuccessful: Boolean, msg: String) -> Unit)){
     try{
         Firebase.auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener(){
-            Log.i(TAG, "signIn is start complete")
+                Log.i(TAG, "signIn is start complete")
 
-            if (it.isSuccessful && it.result.user != null)
-                listener.invoke(true, it.result.user!!.uid)
+                if (it.isSuccessful && it.result.user != null)
+                    answer = true
 
-            Log.i(TAG, "signIn is stop complete")
-        }.addOnSuccessListener {
-            Log.i(TAG, "signIn is successful")
-        }.addOnFailureListener{
-            Log.e(TAG, "signIn is fail: ${it.message}")
-        }.addOnCanceledListener {
-            Log.e(TAG, "signIn is cancel")
-        }.await()
+                Log.i(TAG, "signIn is stop complete")
+            }.addOnSuccessListener {
+                Log.i(TAG, "signIn is successful")
+            }.addOnFailureListener{
+                Log.e(TAG, "signIn is fail: ${it.message}")
+            }.addOnCanceledListener {
+                Log.e(TAG, "signIn is cancel")
+            }.await()
     } catch (e: FirebaseFirestoreException){
         Log.e(TAG, "signIn: $e")
     }
+
+    return answer
 }
 
-// Регистрируем нового Пользователя. Возвращает успешность и сообщение,
-// если не успешно, то сообщение несёт в себе ошибку,
-// если успешно, то сообщение вернёт идентификатор
-suspend fun registrationNewUser(email: String, password: String, listener: ((isSuccessful: Boolean, msg: String) -> Unit)){
+// Регистрирует нового пользователя и возвращает ссылку на него
+suspend fun registrationNewUser(email: String, password: String) : String{
+    var res = ""
 
     try {
         Firebase.auth.createUserWithEmailAndPassword(email, password)
@@ -299,7 +275,7 @@ suspend fun registrationNewUser(email: String, password: String, listener: ((isS
                 Log.i(TAG, "registrationNewUser is start complete")
 
                 if (it.isSuccessful && it.result.user != null)
-                    listener.invoke(true, it.result.user!!.uid)
+                    res = it.result.user!!.uid
 
                 Log.i(TAG, "registrationNewUser is stop complete")
             }.addOnSuccessListener {
@@ -313,44 +289,20 @@ suspend fun registrationNewUser(email: String, password: String, listener: ((isS
         Log.e(TAG, "registrationNewUser: $e")
     }
 
+    return res
 }
 
-// Обновляем пользовательские данные. Возвращает успешность и сообщение,
-// если не успешно, то сообщение несёт в себе ошибку,
-// если успешно, то сообщение вернёт идентификатор
-suspend fun createUserData(data: UserData, listener: ((isSuccessful: Boolean, msg: String) -> Unit)){
-    try{
-        Firebase.firestore.collection("UserData").add(data)
-            .addOnCompleteListener(){
-                Log.i(TAG, "createUserData is start complete")
+// Регистрирует Администратора и возврает ссылку на него
+suspend fun createAdmin(userId: String, admin: Admin) : String{
+    var res = ""
 
-                if (it.isSuccessful)
-                    listener.invoke(true, it.result.id)
-
-                Log.i(TAG, "createUserData is stop complete")
-            }.addOnSuccessListener {
-                Log.i(TAG, "createUserData is successful")
-            }.addOnFailureListener{
-                Log.e(TAG, "createUserData is fail: ${it.message}")
-            }.addOnCanceledListener {
-                Log.e(TAG, "createUserData is cancel")
-            }.await()
-    } catch (e: FirebaseFirestoreException){
-        Log.e(TAG, "createUserData: $e")
-    }
-}
-
-// Создать Администратора. Возвращает успешность и сообщение,
-// если не успешно, то сообщение несёт в себе ошибку,
-// если успешно, то сообщение вернёт идентификатор
-suspend fun createAdmin(userId: String, admin: Admin, listener: ((isSuccessful: Boolean, msg: String) -> Unit)){
     try{
         Firebase.firestore.collection("Admin").document(userId).set(admin)
             .addOnCompleteListener(){
                 Log.i(TAG, "createAdmin is start complete")
 
                 if (it.isSuccessful)
-                    listener.invoke(true, userId)
+                    res = userId
 
                 Log.i(TAG, "createAdmin is stop complete")
             }.addOnSuccessListener {
@@ -363,19 +315,21 @@ suspend fun createAdmin(userId: String, admin: Admin, listener: ((isSuccessful: 
     } catch (e: FirebaseFirestoreException){
         Log.e(TAG, "createAdmin: $e")
     }
+
+    return res
 }
 
-// Создать Работника. Возвращает успешность и сообщение,
-// если не успешно, то сообщение несёт в себе ошибку,
-// если успешно, то сообщение вернёт идентификатор
-suspend fun createWorker(userId: String, worker: Worker, listener: ((isSuccessful: Boolean, msg: String) -> Unit)){
+// Регистрирует Работника и возврает ссылку на него
+suspend fun createWorker(userId: String, worker: Worker) : String{
+    var res = ""
+
     try{
-        Firebase.firestore.collection("Admin").document(userId).set(worker)
+        Firebase.firestore.collection("Worker").document(userId).set(worker)
             .addOnCompleteListener(){
                 Log.i(TAG, "createWorker is start complete")
 
                 if (it.isSuccessful)
-                    listener.invoke(true, userId)
+                    res = userId
 
                 Log.i(TAG, "createWorker is stop complete")
             }.addOnSuccessListener {
@@ -388,4 +342,33 @@ suspend fun createWorker(userId: String, worker: Worker, listener: ((isSuccessfu
     } catch (e: FirebaseFirestoreException){
         Log.e(TAG, "createWorker: $e")
     }
+
+    return res
+}
+
+// Регистрирует пользовательские данные и возврает ссылку на них
+suspend fun createUserData(data: UserData) : String {
+    var res = ""
+
+    try{
+        Firebase.firestore.collection("UserData").add(data)
+            .addOnCompleteListener(){
+                Log.i(TAG, "createUserData is start complete")
+
+                if (it.isSuccessful)
+                    res = it.result.id
+
+                Log.i(TAG, "createUserData is stop complete")
+            }.addOnSuccessListener {
+                Log.i(TAG, "createUserData is successful")
+            }.addOnFailureListener{
+                Log.e(TAG, "createUserData is fail: ${it.message}")
+            }.addOnCanceledListener {
+                Log.e(TAG, "createUserData is cancel")
+            }.await()
+    } catch (e: FirebaseFirestoreException){
+        Log.e(TAG, "createUserData: $e")
+    }
+
+    return res
 }

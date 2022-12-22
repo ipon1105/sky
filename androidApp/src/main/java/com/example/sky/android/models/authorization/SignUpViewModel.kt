@@ -26,6 +26,8 @@ class SignUpViewModel: ViewModel() {
     val isPatronymicValid  by derivedStateOf { patronymic.length in patronymicMin..patronymicMax && !consistDigits(patronymic) }
     val isPhoneValid       by derivedStateOf { Patterns.PHONE.matcher(phone).matches() }
 
+    var internet by mutableStateOf(false)
+        private set
     var name by mutableStateOf("")
         private set
     var surname by mutableStateOf("")
@@ -59,22 +61,14 @@ class SignUpViewModel: ViewModel() {
     var dialogMsg by mutableStateOf("")
         private set
 
+    @JvmName("setInternet1")
+    fun setInternet(value: Boolean){
+        internet = value
+    }
+
     @JvmName("setShowDialog1")
     fun setShowDialog(value: Boolean){
         showDialog = value
-    }
-
-    @JvmName("setDialogMsg1")
-    fun setDialogMsg(value: String){
-        dialogMsg = value
-    }
-
-    @JvmName("setAuthLoading1")
-    fun setAuthLoading(value: Boolean){
-        isAuthLoading = value
-        isTCError = false
-        isPrivacyPolicyError = false
-        isLoginError = false
     }
 
     @JvmName("setName1")
@@ -117,17 +111,12 @@ class SignUpViewModel: ViewModel() {
         status = value
     }
 
-    @JvmName("setShowErrorMessages1")
-    fun setShowErrorMessages(value: Boolean){
-        showErrorMessages = value
-    }
-
     // Перейти на страницу Пользовательское Соглашение
     fun goLinkToTC(navController: NavHostController){
         if (isAuthLoading) {
             isTCError = true
 
-            viewModelScope.launch {
+            viewModelScope.launch(Dispatchers.Main) {
                 delay(10.seconds)
                 isTCError = false
             }
@@ -140,7 +129,7 @@ class SignUpViewModel: ViewModel() {
         if (isAuthLoading) {
             isPrivacyPolicyError = true
 
-            viewModelScope.launch {
+            viewModelScope.launch(Dispatchers.Main) {
                 delay(10.seconds)
                 isPrivacyPolicyError = false
             }
@@ -153,7 +142,7 @@ class SignUpViewModel: ViewModel() {
         if (isAuthLoading) {
             isLoginError = true
 
-            viewModelScope.launch {
+            viewModelScope.launch(Dispatchers.Main) {
                 delay(10.seconds)
                 isLoginError = false
             }
@@ -166,7 +155,7 @@ class SignUpViewModel: ViewModel() {
         if (isAuthLoading) {
             isBackError = true
 
-            viewModelScope.launch {
+            viewModelScope.launch(Dispatchers.Main) {
                 delay(10.seconds)
                 isBackError = false
             }
@@ -175,11 +164,11 @@ class SignUpViewModel: ViewModel() {
     }
 
     // Весь цикл регистрации нового пользователя
-    fun registration(baseListener: (isSuccessful: Boolean, msg: String) -> Unit){
+    private fun registration(navController: NavHostController){
         isAuthLoading = true
 
         // Личные данные пользователя
-        val userData = UserData(
+        val data = UserData(
             name = name,
             surname = surname,
             patronymic = patronymic,
@@ -187,60 +176,52 @@ class SignUpViewModel: ViewModel() {
             telephone = phone,
             status = status
         )
+
         // Паралельная работа
-        viewModelScope.launch(Dispatchers.IO){
+        viewModelScope.launch(Dispatchers.Main){
+
+            // Попытка регистрации
             try{
                 // Регистрация нового пользователя
-                registrationNewUser(email, password) { isSuccessfulNewUser, userId ->
-
-                    // Паралельная работа
-                    viewModelScope.launch(Dispatchers.IO){
-                        try {
-                            // Создания новых данных пользователя
-                            createUserData( userData ) { isSuccessfulUserData, dataId ->
-
-                                // Паралельная работа
-                                viewModelScope.launch(Dispatchers.IO){
-                                    try{
-                                        // Регистрация Админа
-                                        if (status == 2)
-                                            createAdmin(
-                                                userId = userId,
-                                                admin = Admin(
-                                                    auth = userId,
-                                                    info = dataId
-                                                )
-                                            ){ isSuccessfulAdmin, adminId -> baseListener.invoke(isSuccessfulAdmin, adminId) }
-                                        // Регистрация Работника
-                                        else
-                                            createWorker(
-                                                userId = userId,
-                                                worker = Worker(
-                                                    auth = userId,
-                                                    info = dataId
-                                                )
-                                            ){ isSuccessfulWorker, workerId -> baseListener.invoke(isSuccessfulWorker, workerId) }
-                                    // Неудача
-                                    } catch (it: Exception){
-                                        baseListener.invoke(false, it.message.toString())
-                                    }
-                                }
-                            }
-                        // Неудачное создание новых данных пользоватлея
-                        } catch (it: Exception){
-                            baseListener.invoke(false, it.message.toString())
-                        }
+                val userId = registrationNewUser(email, password)
+                val userData = createUserData(data)
+                if (status == 2) {
+                        createAdmin(
+                            userId = userId,
+                            admin = Admin(
+                                auth = userId,
+                                info = userData
+                            )
+                        )
+                    } else {
+                        createWorker(
+                            userId = userId,
+                            worker = Worker(
+                                auth = userId,
+                                info = userData
+                            )
+                        )
                     }
-                }
+                isAuthLoading = false
+                navController.navigate(NavRoute.Main.route)
+
             // Неудачная регистрация нового пользователя
             } catch (it: Exception){
-                baseListener.invoke(false, it.message.toString())
+                isAuthLoading = false
+                showDialog = true
+                dialogMsg = it.message.toString()
             }
         }
     }
 
     // Функция входа на главные экраны
-    fun login(navController: NavHostController){
-        navController.navigate(NavRoute.Main.route)
+    fun btnContinueClick(navController: NavHostController){
+        if (!internet)
+            showDialog = true
+        else
+            if (!isEmailValid || !isNameValid || !isPassValid || !isProvingPassValid || !isPhoneValid)
+                showErrorMessages = true
+            else
+                registration(navController)
     }
 }

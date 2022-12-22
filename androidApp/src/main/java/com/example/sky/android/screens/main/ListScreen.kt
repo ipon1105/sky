@@ -50,21 +50,13 @@ private val viewModel = ListViewModel()
 )
 @Composable
 fun ListScreen(navController: NavHostController) {
+    // Обновление списка
+    viewModel.updateList()
+
     // Интернет
     val connection by connectivityState()
-    viewModel.setInternetConnection(connection === ConnectionState.Available)
+    viewModel.setInternet(connection === ConnectionState.Available)
 
-    // Обновление списка
-    viewModel.updateList(){isSuccessful, list, msg ->
-        viewModel.setOneUpdate(false)
-        viewModel.setUpdating(false)
-        if (isSuccessful && !viewModel.listEquals(list))
-            viewModel.setListFlat(list)
-        else {
-            viewModel.setShowDialog(true)
-            viewModel.setDialogMsg(msg)
-        }
-    }
     val buttonsElevation = 5.dp
 
     // Главное содержимое
@@ -122,9 +114,7 @@ fun ListScreen(navController: NavHostController) {
         // Поле ввода поиска
         TextField(
             value = viewModel.search,
-            onValueChange = {
-                viewModel.setSearch(it)
-            },
+            onValueChange = { viewModel.setSearch(it) },
             placeholder = { Text(text = stringResource(id = R.string.search), color = TextSearchColor) },
             modifier = Modifier
                 .fillMaxWidth()
@@ -147,9 +137,11 @@ fun ListScreen(navController: NavHostController) {
             shape = RoundedCornerShape(analyticsBig),
         )
 
+        // Загрузка данных из сети
         if (viewModel.isUpdating)
             CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally), color =  mainColor )
 
+        // Список квартир
         LazyColumn(modifier = Modifier.padding(horizontal = ComponentDiffNormal)){
 
             itemsIndexed(
@@ -175,7 +167,8 @@ fun ListScreen(navController: NavHostController) {
         Spacer(modifier = Modifier.padding(bottom = ScreenArea))
     }
 
-    if (viewModel.showDialog && viewModel.internetConnection)
+    // Диалоговое окно с ошибкой
+    if (viewModel.showDialog && viewModel.internet)
         AlertDialog(
             onDismissRequest = { viewModel.setShowDialog(false) },
             title = { Text(text = stringResource(id = R.string.error), color = Color.Red) },
@@ -200,7 +193,7 @@ fun ListScreen(navController: NavHostController) {
         )
 
     // Сообщение об отсутсвие интернета
-    if (viewModel.showDialog && !viewModel.internetConnection)
+    if (viewModel.showDialog && !viewModel.internet)
         NoInternet(onDismissRequest = {viewModel.setShowDialog(false)}, btnOnClick = {viewModel.setShowDialog(false)})
 }
 
@@ -217,7 +210,7 @@ fun FlatElementList(el: Flat, navController: NavHostController){
             .fillMaxWidth()
             .padding(vertical = verticalNormal)
             .clickable {
-                viewModel.toFlatInfo(
+                viewModel.cardClickFlatInfo(
                     navController = navController,
                     flatId = el.flatId
                 )
@@ -300,7 +293,7 @@ fun AddNewFlat(navController: NavHostController){
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = verticalNormal)
-            .clickable { viewModel.toNewFlat(navController = navController) }
+            .clickable { viewModel.cardClickToNewFlat(navController = navController) }
             .height(cardSize)
             .border(
                 border = BorderStroke(borderWeight, color = lightGray),

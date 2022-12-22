@@ -9,9 +9,9 @@ import com.example.sky.navigation.NavRoute
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-// Модель для
+// Модель для экрана со списком квартир
 class ListViewModel(): ViewModel(){
-    var internetConnection by mutableStateOf(true)
+    var internet by mutableStateOf(true)
         private set
     var showDialog by mutableStateOf(false)
         private set
@@ -34,24 +34,9 @@ class ListViewModel(): ViewModel(){
     var flatList by mutableStateOf(getBaseList())
         private set
 
-    @JvmName("setInternetConnection1")
-    fun setInternetConnection(value: Boolean){
-        internetConnection = value
-    }
-
-    @JvmName("setDialogMsg1")
-    fun setDialogMsg(value: String){
-        dialogMsg = value
-    }
-
-    @JvmName("setUpdating1")
-    fun setUpdating(value: Boolean){
-        isUpdating = value
-    }
-
-    @JvmName("setOneUpdate1")
-    fun setOneUpdate(value: Boolean){
-        isOneUpdate = value
+    @JvmName("setInternet1")
+    fun setInternet(value: Boolean){
+        internet = value
     }
 
     @JvmName("setShowDialog1")
@@ -80,43 +65,38 @@ class ListViewModel(): ViewModel(){
     }
 
     // Обновить список
-    fun updateList(baseListener: (isSuccessful: Boolean, list: List<Flat>, msg: String) -> Unit){
+    fun updateList(){
         if (isOneUpdate) {
             isUpdating = true
 
             // Паралельная работа
-            viewModelScope.launch(Dispatchers.IO) {
+            viewModelScope.launch(Dispatchers.Main) {
 
                 // Попытка загрузки данных
                 try {
-                    baseListener.invoke(true, getFlatListFromFirestore(), "")
+                    val admin = getAdminFromFirestore()
+                    val list = getFlatListFromFirestore(admin)
+
+                    setListFlat(list)
+
+                    isOneUpdate = false
+                    isUpdating = false
                 }
                 // Неудачная попытка загрузки
                 catch (it: Exception) {
-                    baseListener.invoke(false, getBaseList() as List<Flat>, it.message.toString())
+                    isOneUpdate = false
+                    isUpdating = false
+
+                    showDialog = true
+                    dialogMsg = it.message.toString()
                 }
             }
         }
     }
 
-    fun setListFlat(list: List<Flat>){
-        flatList = list
-        flatList += null
-    }
-
-    // Равны ли списки
-    fun listEquals(list: List<Flat>) : Boolean{
-        if (flatList.size != list.size)
-            return false
-        for (flat in flatList)
-            if (!list.contains(flat))
-                return false
-        return true
-    }
-
     // Новая квартира
-    fun toNewFlat(navController: NavHostController){
-        if (!internetConnection)
+    fun cardClickToNewFlat(navController: NavHostController){
+        if (!internet)
             showDialog = true
         else {
             val flatId = "null";
@@ -125,8 +105,8 @@ class ListViewModel(): ViewModel(){
     }
 
     // Страница подробнее
-    fun toFlatInfo(navController: NavHostController, flatId: String){
-        if (!internetConnection)
+    fun cardClickFlatInfo(navController: NavHostController, flatId: String){
+        if (!internet)
             showDialog = true
         else
             navController.navigate(route = NavRoute.FlatInfo.route + "/${flatId}")
@@ -138,8 +118,14 @@ class ListViewModel(): ViewModel(){
         isOneUpdate = true
     }
 
+    // Переопределить список квартир
+    private fun setListFlat(list: List<Flat>){
+        flatList = list
+        flatList += null
+    }
+
     // Возвращает пустой лист
-    fun getBaseList():List<Flat?>{
+    private fun getBaseList():List<Flat?>{
         return listOf(null)
     }
 }

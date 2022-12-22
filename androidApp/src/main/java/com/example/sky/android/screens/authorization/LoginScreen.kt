@@ -21,7 +21,7 @@ import androidx.navigation.NavHostController
 import com.example.sky.android.composables.EmailTextField
 import com.example.sky.android.composables.NoInternet
 import com.example.sky.android.composables.PasswordTextField
-import com.example.sky.android.models.LoginViewModel
+import com.example.sky.android.models.authorization.LoginViewModel
 import com.example.sky.android.utils.connection.ConnectionState
 import com.example.sky.android.utils.connection.connectivityState
 import com.example.sky.ui.theme.*
@@ -35,7 +35,7 @@ fun LoginScreen(navController: NavHostController) {
 
     // Интернет
     val connection by connectivityState()
-    val isConnected = connection === ConnectionState.Available
+    viewModel.setInternet(connection === ConnectionState.Available)
 
     Column(
         modifier = Modifier
@@ -101,25 +101,7 @@ fun LoginScreen(navController: NavHostController) {
         // Кнопка входа
         Button(
             enabled = !viewModel.isAuthLoading,
-            onClick = {
-                if (!isConnected){
-                    viewModel.setShowDialog(true)
-                } else
-                    if (!viewModel.isEmailValid || !viewModel.isPasswordValid)
-                        viewModel.setShowErrorMessages(true)
-                    else
-                        viewModel.tryLogin(){isSuccessful, msg ->
-                            viewModel.setAuthLoading(false)
-                            if (isSuccessful)
-                                viewModel.login(navController)
-                            else {
-                                viewModel.setShowDialog(true)
-                                viewModel.setDialogMsg(msg)
-                            }
-
-                        }
-
-            },
+            onClick = { viewModel.btnLoginClick(navController = navController) },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = ComponentDiffLarge),
@@ -173,6 +155,6 @@ fun LoginScreen(navController: NavHostController) {
         )
 
     // Сообщение об отсутствие интернета
-    if (viewModel.showDialog && !isConnected)
+    if (viewModel.showDialog && !viewModel.internet)
         NoInternet(onDismissRequest = {viewModel.setShowDialog(false)}, btnOnClick = {viewModel.setShowDialog(false)})
 }

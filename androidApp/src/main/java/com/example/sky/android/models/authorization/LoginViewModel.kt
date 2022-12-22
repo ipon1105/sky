@@ -1,4 +1,4 @@
-package com.example.sky.android.models
+package com.example.sky.android.models.authorization
 
 import android.util.Patterns
 import androidx.compose.runtime.derivedStateOf
@@ -8,6 +8,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
+import com.example.sky.android.models.signIn
 import com.example.sky.navigation.NavRoute
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -32,17 +33,14 @@ class LoginViewModel: ViewModel() {
         private set
     var showErrorMessages by mutableStateOf(false)
         private set
+    var internet by mutableStateOf(false)
+        private set
     var dialogMsg by mutableStateOf("")
         private set
 
-    @JvmName("setShowErrorMessages1")
-    fun setShowErrorMessages(value: Boolean){
-        showErrorMessages = value
-    }
-
-    @JvmName("setDialogMsg1")
-    fun setDialogMsg(value: String){
-        dialogMsg = value
+    @JvmName("setInternet1")
+    fun setInternet(value: Boolean){
+        internet = value
     }
 
     @JvmName("setShowDialog1")
@@ -60,19 +58,12 @@ class LoginViewModel: ViewModel() {
         password = value
     }
 
-    @JvmName("setAuthLoading1")
-    fun setAuthLoading(value: Boolean){
-        isAuthLoading = value
-        isLinkRegister = false
-        isLinkForgotPassword = false
-    }
-
     // Перейти на страницу Регистрация
     fun goLinkToRegister(navController: NavHostController){
         if (isAuthLoading) {
             isLinkRegister = true
 
-            viewModelScope.launch {
+            viewModelScope.launch(Dispatchers.Main) {
                 delay(10.seconds)
                 isLinkRegister = false
             }
@@ -85,7 +76,7 @@ class LoginViewModel: ViewModel() {
         if (isAuthLoading) {
             isLinkForgotPassword = true
 
-            viewModelScope.launch {
+            viewModelScope.launch(Dispatchers.Main) {
                 delay(10.seconds)
                 isLinkForgotPassword = false
             }
@@ -94,24 +85,37 @@ class LoginViewModel: ViewModel() {
     }
 
     // Функция входа на главные экраны
-    fun login(navController: NavHostController){
-        navController.navigate(NavRoute.Main.route)
-    }
-
-    // Функция входа на главные экраны
-    fun tryLogin(baseListener: (isSuccessful: Boolean, msg: String) -> Unit){
+    private fun tryLogin(navController: NavHostController){
         isAuthLoading = true
-        // Паралельная работа
-        viewModelScope.launch(Dispatchers.IO){
+
+        // Новый поток для входа
+        viewModelScope.launch(Dispatchers.Main){
             // Попытка входа
             try{
-                signIn(email, password){ isSuccessful, msg ->
-                    baseListener.invoke(true, msg)
+
+                if (signIn(email, password))
+                {
+                    isAuthLoading = false
+                    navController.navigate(NavRoute.Main.route)
                 }
+
             // Неудачная попытка входа
             } catch (it: Exception){
-                baseListener.invoke(false, it.message.toString())
+                isAuthLoading = false
+                showDialog = true
+                dialogMsg = it.message.toString()
             }
         }
+    }
+
+    // Нажатие на кнопку входа
+    fun btnLoginClick(navController: NavHostController){
+        if (!internet)
+            showDialog = true
+        else
+            if (!isEmailValid || !isPasswordValid)
+                showErrorMessages = true
+            else
+                tryLogin(navController = navController)
     }
 }

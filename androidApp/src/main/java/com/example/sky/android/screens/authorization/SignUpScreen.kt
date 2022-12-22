@@ -43,7 +43,7 @@ fun SignUpScreen(navController: NavHostController) {
 
     // Интернет
     val connection by connectivityState()
-    val isConnected = connection === ConnectionState.Available
+    viewModel.setInternet( connection === ConnectionState.Available )
 
     Column(
         modifier = Modifier
@@ -58,7 +58,7 @@ fun SignUpScreen(navController: NavHostController) {
             Image(
                 painter = rememberVectorPainter(image = Icons.Filled.ArrowBack),
                 contentDescription = stringResource(id = R.string.imageDescriptionBack),
-                modifier = Modifier.clickable { viewModel.goToBack(navController = navController) }
+                modifier = Modifier.clickable { viewModel.goToBack(navController) }
             )
         }
 
@@ -201,7 +201,7 @@ fun SignUpScreen(navController: NavHostController) {
             ) {
                 Text(text = stringResource(id = R.string.signUpAgree) + " ", color = Color.Gray)
                 Text(text = stringResource(id = R.string.signUpTC),
-                     modifier = Modifier.clickable { viewModel.goLinkToTC(navController = navController) },
+                     modifier = Modifier.clickable { viewModel.goLinkToTC(navController) },
                      color = linkColor
                 )
             }
@@ -211,7 +211,7 @@ fun SignUpScreen(navController: NavHostController) {
             ){
                 Text(text = stringResource(id = R.string.signUpAnd) + " ", color = Color.Gray)
                 Text(text = stringResource(id = R.string.signUpPrivacyPolicy),
-                     modifier = Modifier.clickable { viewModel.goLinkToPrivacyPolicy(navController = navController) },
+                     modifier = Modifier.clickable { viewModel.goLinkToPrivacyPolicy(navController) },
                      color = linkColor
                 )
             }
@@ -220,25 +220,7 @@ fun SignUpScreen(navController: NavHostController) {
         // Кнопка продолжить
         Button(
             enabled = !viewModel.isAuthLoading,
-            onClick = {
-                if (!isConnected){
-                    viewModel.setShowDialog(true)
-                } else
-                    if (!viewModel.isEmailValid || !viewModel.isNameValid || !viewModel.isPassValid || !viewModel.isProvingPassValid || !viewModel.isPhoneValid)
-                        viewModel.setShowErrorMessages(true)
-                    else
-                        viewModel.registration(){isSuccessful, msg ->
-                            viewModel.setAuthLoading(false)
-                            if (isSuccessful)
-                                viewModel.login(navController)
-                            else {
-                                viewModel.setShowDialog(true)
-                                viewModel.setDialogMsg(msg)
-                            }
-
-                        }
-
-            },
+            onClick = { viewModel.btnContinueClick(navController) },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = ComponentDiffLarge),
@@ -267,7 +249,7 @@ fun SignUpScreen(navController: NavHostController) {
     }
 
     // Диалоговое окно
-    if (viewModel.showDialog && isConnected)
+    if (viewModel.showDialog && viewModel.internet)
         AlertDialog(
             onDismissRequest = { viewModel.setShowDialog(false) },
             title = { Text( text = stringResource(id = R.string.error), color = FlatRed) },
@@ -292,7 +274,7 @@ fun SignUpScreen(navController: NavHostController) {
         )
 
     // Сообщение об отсутствие интернета
-    if (viewModel.showDialog && !isConnected)
+    if (viewModel.showDialog && !viewModel.internet)
         NoInternet(onDismissRequest = {viewModel.setShowDialog(false)}, btnOnClick = {viewModel.setShowDialog(false)})
 
     // Всплывающие сообщения
