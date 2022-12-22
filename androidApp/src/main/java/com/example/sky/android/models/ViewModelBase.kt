@@ -121,36 +121,9 @@ suspend fun updateAdminInFirestore(adminId: String, data: Admin, listener: ((isS
     }
 }
 
-// Удаляем модель квартиры из базы данных
-// если не успешно, то сообщение несёт в себе ошибку,
-// если успешно, то сообщение вернёт идентификатор квартиры
-suspend fun deleteFlatFromFirestore(flatId: String, listener: ((isSuccessfull: Boolean, msg: String) -> Unit)){
-    if (flatId.equals("")) {
-        listener.invoke(false, "flatId is empty")
-        return
-    }
-
-    try {
-        Firebase.firestore.collection("Flat").document(flatId).delete()
-            .addOnCompleteListener(){
-                Log.i(TAG, "deleteFlatFromFirestore deleting is complete")
-                listener.invoke(true, flatId)
-            }.addOnSuccessListener {
-                Log.i(TAG, "deleteFlatFromFirestore deleting is successful")
-            }.addOnFailureListener{
-                Log.e(TAG, "deleteFlatFromFirestore deleting is fail")
-            }.addOnCanceledListener {
-                Log.e(TAG, "deleteFlatFromFirestore deleting is cancel")
-            }.await()
-    } catch (e: FirebaseFirestoreException){
-        Log.e(TAG, "deleteFlatFromFirestore: $e")
-    }
-
-}
-
 // Удаляем данные из администратора
 // если успешно, то сообщение вернёт идентификатор админа
-suspend fun deleteFlatFromAdminFromFirestore(flatId: String, admin: Admin, listener: ((isSuccessful: Boolean, msg: String) -> Unit)){
+suspend fun deleteFlatFromAdminFromFirestore(flatId: String, admin: Admin){
     var newList: List<String> = emptyList()
 
     admin.flatList.forEach {
@@ -163,7 +136,6 @@ suspend fun deleteFlatFromAdminFromFirestore(flatId: String, admin: Admin, liste
         Firebase.firestore.collection("Admin").document(admin.auth).update("flatList", newList)
             .addOnCompleteListener(){
                 Log.i(TAG, "deleteFlatFromAdminFromFirestore updating is complete")
-                listener.invoke(true, admin.auth)
             }.addOnSuccessListener {
                 Log.i(TAG, "deleteFlatFromAdminFromFirestore updating is successful")
             }.addOnFailureListener{
@@ -175,6 +147,28 @@ suspend fun deleteFlatFromAdminFromFirestore(flatId: String, admin: Admin, liste
     } catch (e: FirebaseFirestoreException){
         Log.e(TAG, "deleteFlatFromAdminFromFirestore: $e")
     }
+}
+
+// Удаляем модель квартиры из базы данных и возвращаем идентификатор квартиры
+suspend fun deleteFlatFromFirestore(flatId: String) : String{
+    val res = flatId
+
+    try {
+        Firebase.firestore.collection("Flat").document(flatId).delete()
+            .addOnCompleteListener(){
+                Log.i(TAG, "deleteFlatFromFirestore deleting is complete")
+            }.addOnSuccessListener {
+                Log.i(TAG, "deleteFlatFromFirestore deleting is successful")
+            }.addOnFailureListener{
+                Log.e(TAG, "deleteFlatFromFirestore deleting is fail")
+            }.addOnCanceledListener {
+                Log.e(TAG, "deleteFlatFromFirestore deleting is cancel")
+            }.await()
+    } catch (e: FirebaseFirestoreException){
+        Log.e(TAG, "deleteFlatFromFirestore: $e")
+    }
+
+    return res
 }
 
 // Получаем запись администратора из базы данных
