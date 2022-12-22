@@ -28,32 +28,46 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
-import com.example.sky.android.models.FlatModel
-import com.example.sky.android.models.flatList
-import com.example.sky.navigation.NavRoute
+import com.example.sky.android.composables.NoInternet
+import com.example.sky.android.models.ListViewModel
+import com.example.sky.android.models.data.Flat
+import com.example.sky.android.utils.connection.ConnectionState
+import com.example.sky.android.utils.connection.connectivityState
 import com.example.sky.ui.theme.*
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 
-@SuppressLint("SuspiciousIndentation")
+// Обновить данные в вью модели
+fun refreshModel(){
+    viewModel.refreshList()
+}
+
+// вью модель
+private val viewModel = ListViewModel()
+
+@OptIn(ExperimentalCoroutinesApi::class)
+@SuppressLint("SuspiciousIndentation", "UnrememberedMutableState",
+    "StateFlowValueCalledInComposition"
+)
 @Composable
 fun ListScreen(navController: NavHostController) {
+    // Интернет
+    val connection by connectivityState()
+    viewModel.setInternetConnection(connection === ConnectionState.Available)
+
+    // Обновление списка
+    viewModel.updateList(){isSuccessful, list, msg ->
+        viewModel.setOneUpdate(false)
+        viewModel.setUpdating(false)
+        if (isSuccessful && !viewModel.listEquals(list))
+            viewModel.setListFlat(list)
+        else {
+            viewModel.setShowDialog(true)
+            viewModel.setDialogMsg(msg)
+        }
+    }
     val buttonsElevation = 5.dp
-    var search by remember {
-        mutableStateOf("")
-    }
-    var btnFree by remember {
-        mutableStateOf( true)
-    }
-    var btnDirty by remember {
-        mutableStateOf( true)
-    }
-    var btnBusy by remember {
-        mutableStateOf( true)
-    }
 
-    // TODO: Добавить пояснение для кружочков в элементах списка
-    // TODO: Оступ в элементе списка справа больше, чем слевва - Сделать одинаковыми.
-    // TODO: Попробовать изменить кружочек на флажок, что бы была другая асоциация
-
+    // Главное содержимое
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -72,8 +86,8 @@ fun ListScreen(navController: NavHostController) {
         ){
             // Свободно
             Button(
-                onClick = { btnFree = !btnFree },
-                colors = ButtonDefaults.buttonColors(backgroundColor = if (btnFree) FlatGreen else DarkGray),
+                onClick = { viewModel.setBtnFreeOn(!viewModel.isBtnFreeOn) },
+                colors = ButtonDefaults.buttonColors(backgroundColor = if (viewModel.isBtnFreeOn) FlatGreen else DarkGray),
                 elevation = ButtonDefaults.elevation(
                     defaultElevation = buttonsElevation
                 ),
@@ -83,8 +97,8 @@ fun ListScreen(navController: NavHostController) {
 
             // Грязно
             Button(
-                onClick = { btnDirty = !btnDirty },
-                colors = ButtonDefaults.buttonColors(backgroundColor = if (btnDirty) FlatYellow else DarkGray),
+                onClick = { viewModel.setBtnDirtyOn(!viewModel.isBtnDirtyOn) },
+                colors = ButtonDefaults.buttonColors(backgroundColor = if (viewModel.isBtnDirtyOn) FlatYellow else DarkGray),
                 elevation = ButtonDefaults.elevation(
                     defaultElevation = buttonsElevation
                 ),
@@ -94,8 +108,8 @@ fun ListScreen(navController: NavHostController) {
 
             // Занято
             Button(
-                onClick = { btnBusy = !btnBusy },
-                colors = ButtonDefaults.buttonColors(backgroundColor = if (btnBusy) FlatRed else DarkGray),
+                onClick = { viewModel.setBtnBusyOn(!viewModel.isBtnBusyOn) },
+                colors = ButtonDefaults.buttonColors(backgroundColor = if (viewModel.isBtnBusyOn) FlatRed else DarkGray),
                 elevation = ButtonDefaults.elevation(
                     defaultElevation = buttonsElevation
                 ),
@@ -107,9 +121,9 @@ fun ListScreen(navController: NavHostController) {
 
         // Поле ввода поиска
         TextField(
-            value = search,
+            value = viewModel.search,
             onValueChange = {
-                search = it
+                viewModel.setSearch(it)
             },
             placeholder = { Text(text = stringResource(id = R.string.search), color = TextSearchColor) },
             modifier = Modifier
@@ -125,23 +139,34 @@ fun ListScreen(navController: NavHostController) {
             ),
             leadingIcon = { Icon(Icons.Filled.Search, contentDescription = stringResource(id = R.string.imageDescriptionEmail)) },
             trailingIcon = {
-                if (search.isNotEmpty())
-                    IconButton(onClick = { search = ""}) {
+                if (viewModel.search.isNotEmpty())
+                    IconButton(onClick = { viewModel.setSearch("")}) {
                         Icon(imageVector = Icons.Outlined.Close, contentDescription = null)
                     }
             },
             shape = RoundedCornerShape(analyticsBig),
         )
 
+        if (viewModel.isUpdating)
+            CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally), color =  mainColor )
+
         LazyColumn(modifier = Modifier.padding(horizontal = ComponentDiffNormal)){
 
             itemsIndexed(
-                items = flatList
+                items = viewModel.flatList
             ){ index, item ->
+
                 if (item == null)
                     AddNewFlat(navController = navController)
-                else if (item.address.contains(search, ignoreCase = true))
+                else if (item.address.contains(viewModel.search, ignoreCase = true))
+                {
+                    if (viewModel.isBtnFreeOn && item.status == 0 )
                         FlatElementList(item, navController = navController)
+                    if (viewModel.isBtnDirtyOn && item.status == 1)
+                        FlatElementList(item, navController = navController)
+                    if (viewModel.isBtnBusyOn && item.status == 2)
+                        FlatElementList(item, navController = navController)
+                }
 
             }
         }
@@ -149,11 +174,39 @@ fun ListScreen(navController: NavHostController) {
         // Пробел
         Spacer(modifier = Modifier.padding(bottom = ScreenArea))
     }
+
+    if (viewModel.showDialog && viewModel.internetConnection)
+        AlertDialog(
+            onDismissRequest = { viewModel.setShowDialog(false) },
+            title = { Text(text = stringResource(id = R.string.error), color = Color.Red) },
+            text = { Text( text = viewModel.dialogMsg ) },
+            buttons = {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(all = alertDialogArea)
+                        .padding(top = 0.dp),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    Button(
+                        onClick = { viewModel.setShowDialog(false) },
+                        shape = RoundedCornerShape(largeShape),
+                        colors = ButtonDefaults.buttonColors( backgroundColor = mainColor ),
+                    ) {
+                        Text( text = stringResource(id = R.string.alertOkay), color = Color.White, modifier = Modifier.padding(all = TextTopSmall))
+                    }
+                }
+            }
+        )
+
+    // Сообщение об отсутсвие интернета
+    if (viewModel.showDialog && !viewModel.internetConnection)
+        NoInternet(onDismissRequest = {viewModel.setShowDialog(false)}, btnOnClick = {viewModel.setShowDialog(false)})
 }
 
 @OptIn(ExperimentalCoilApi::class)
 @Composable
-fun FlatElementList(el: FlatModel, navController: NavHostController){
+fun FlatElementList(el: Flat, navController: NavHostController){
     val cardElevation = 15.dp
     val cardSize = 100.dp
     val status = 30.dp
@@ -163,7 +216,12 @@ fun FlatElementList(el: FlatModel, navController: NavHostController){
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = verticalNormal)
-            .clickable { navController.navigate(route = NavRoute.FlatInfo.route) },
+            .clickable {
+                viewModel.toFlatInfo(
+                    navController = navController,
+                    flatId = el.flatId
+                )
+            },
         shape = RoundedCornerShape(size = largeShape),
         elevation = cardElevation,
         backgroundColor = lightDarkGray,
@@ -210,7 +268,7 @@ fun FlatElementList(el: FlatModel, navController: NavHostController){
                             .size(status)
                             .background(
                                 shape = RoundedCornerShape(bottomStart = shortShape),
-                                color = FlatGreen
+                                color = if (el.status == 0) FlatGreen else if (el.status == 1) FlatYellow else FlatRed
                             )
                             .weight(1.28f)
                     ){}
@@ -228,7 +286,6 @@ fun FlatElementList(el: FlatModel, navController: NavHostController){
                     color = GrayTextColor,
                 )
             }
-
         }
     }
 }
@@ -243,7 +300,7 @@ fun AddNewFlat(navController: NavHostController){
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = verticalNormal)
-            .clickable { navController.navigate(route = NavRoute.Editor.route) }
+            .clickable { viewModel.toNewFlat(navController = navController) }
             .height(cardSize)
             .border(
                 border = BorderStroke(borderWeight, color = lightGray),

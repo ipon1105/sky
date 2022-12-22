@@ -7,4 +7,5 @@ data class Flat(
     val photos: List<String> = listOf(),
     var cleaningCost: String = "",
     var flatId: String = "",
+    var status: Int = 0,
 )
