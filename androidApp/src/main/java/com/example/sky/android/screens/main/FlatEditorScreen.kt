@@ -224,18 +224,18 @@ fun FlatEditorScreen(navController: NavHostController, flatId: String = "") {
                                 maxLength = viewModel.maxAddressLength,
                                 errorMsg = stringResource(id = R.string.addressError)
                             )
-
-                            // Стоимость  уборки
-                            EditorTextField(
-                                hint = stringResource(id = R.string.cleaningCost),
-                                text = viewModel.cleaningCost,
-                                placeholder = stringResource(id = R.string.cleaningCostTemplate),
-                                onValueChange = { viewModel.setCleaningCost(it) },
-                                isError = !viewModel.isCleaningCostValid,
-                                isClear = true,
-                                maxLength = viewModel.maxCleaningCostLength,
-                                errorMsg = stringResource(id = R.string.cleaningCostError)
-                            )
+// Для следующих версий
+//                            // Стоимость  уборки
+//                            EditorTextField(
+//                                hint = stringResource(id = R.string.cleaningCost),
+//                                text = viewModel.cleaningCost,
+//                                placeholder = stringResource(id = R.string.cleaningCostTemplate),
+//                                onValueChange = { viewModel.setCleaningCost(it) },
+//                                isError = !viewModel.isCleaningCostValid,
+//                                isClear = true,
+//                                maxLength = viewModel.maxCleaningCostLength,
+//                                errorMsg = stringResource(id = R.string.cleaningCostError)
+//                            )
 
                             // Описание
                             EditorTextField(

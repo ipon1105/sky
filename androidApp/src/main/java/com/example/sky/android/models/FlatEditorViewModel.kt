@@ -292,9 +292,9 @@ class FlatEditorViewModel(var flatId: String = "", var context: Context): ViewMo
             return
         }
 
-        isShowLittleError = address.isEmpty() || cleaningCost.isEmpty() || description.isEmpty()
+        isShowLittleError = address.isEmpty() || description.isEmpty()
 
-        if (!isShowLittleError && isAddressValid && isCleaningCostValid && isDescriptionValid)
+        if (!isShowLittleError && isAddressValid && isDescriptionValid)
             updateFlat()
     }
 
@@ -309,11 +309,12 @@ class FlatEditorViewModel(var flatId: String = "", var context: Context): ViewMo
         isEditable = true
     }
 
-    @JvmName("setCleaningCost1")
-    fun setCleaningCost(value: String){
-        cleaningCost = value
-        isEditable = true
-    }
+//   Скрытый функционал
+//    @JvmName("setCleaningCost1")
+//    fun setCleaningCost(value: String){
+//        cleaningCost = value
+//        isEditable = true
+//    }
 
     @JvmName("setDescription1")
     fun setDescription(value: String){
