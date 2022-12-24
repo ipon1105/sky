@@ -4,7 +4,7 @@ data class Flat(
     var owner: String = "",
     var address: String = "",
     var description: String = "",
-    val photos: List<String> = listOf(),
+    var photos: List<String> = listOf(),
     var cleaningCost: String = "",
     var flatId: String = "",
     var status: Int = 0,

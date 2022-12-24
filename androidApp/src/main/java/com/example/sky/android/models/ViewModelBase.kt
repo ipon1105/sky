@@ -1,5 +1,6 @@
 package com.example.sky.android.models
 
+import android.net.Uri
 import android.util.Log
 import com.example.sky.android.models.data.Admin
 import com.example.sky.android.models.data.Flat
@@ -8,6 +9,7 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.ktx.storage
 import kotlinx.coroutines.tasks.await
 
 private const val TAG = "ViewModelBase"
@@ -21,6 +23,118 @@ fun getUserId() : String{
 // Авторизован ли пользователь
 fun isUserAuth() : Boolean {
     return  if (getUserId().equals("")) false else true
+}
+
+// Удалить изображение из базы
+suspend fun deleteImage(path: String){
+
+    try {
+        Firebase.storage.reference.child(path).delete()
+            .addOnCompleteListener() {
+                Log.i(TAG, "deleteImage is complete")
+            }.addOnSuccessListener {
+                Log.i(TAG, "deleteImage is successful")
+            }.addOnFailureListener {
+                Log.e(TAG, "deleteImage is fail")
+            }.addOnCanceledListener {
+                Log.e(TAG, "deleteImage is cancel")
+            }.await()
+    } catch (e: Exception){
+        Log.e(TAG, "deleteImage is cancel")
+    }
+
+}
+
+// Получить ссылку на скичавание изобажения
+suspend fun getUriLink(name: String): Uri {
+    var res = Uri.parse("none")
+
+    try {
+        Firebase.storage.reference.child(name).downloadUrl
+            .addOnCompleteListener() {
+                Log.i(TAG, "getUriLink is complete")
+                if (it.isSuccessful)
+                    res = it.result
+                Log.i(TAG, "getUriLink save to $res")
+            }.addOnSuccessListener {
+                Log.i(TAG, "getUriLink is successful")
+            }.addOnFailureListener {
+                Log.e(TAG, "getUriLink is fail")
+            }.addOnCanceledListener {
+                Log.e(TAG, "getUriLink is cancel")
+            }.await()
+    } catch (e: Exception){
+        Log.e(TAG, "getUriLink is cancel")
+    }
+
+    return res
+}
+
+// Обновить данные о квартире и возвращает ссылку на файл
+suspend fun updateFlatImage(uri: Uri, name: String, flatId: String) : String{
+    val res = "${getUserId()}/flats/$flatId/$name"
+
+    try {
+        Firebase
+            .storage
+            .reference
+            .child(res)
+            .putFile(uri)
+            .addOnCompleteListener(){
+                Log.i(TAG, "updateFlatImage is complete")
+                Log.i(TAG, "updateFlatImage save to $res")
+            }.addOnSuccessListener {
+                Log.i(TAG, "updateFlatImage is successful")
+            }.addOnFailureListener{
+                Log.e(TAG, "updateFlatImage is fail")
+            }.addOnCanceledListener {
+                Log.e(TAG, "updateFlatImage is cancel")
+            }.await()
+    } catch (e: FirebaseFirestoreException){
+        Log.e(TAG, "updateFlatImage: $e")
+    }
+
+    return res
+}
+
+// Изменяем модель квартиры в базе данных
+// если успешно, то сообщение вернёт идентификатор квартиры
+suspend fun updateFlatToFirestore(flatId: String, data: Flat){
+    try {
+        Firebase.firestore
+            .collection("Flat")
+            .document(flatId)
+            .set(data)
+            .addOnCompleteListener(){
+                Log.i(TAG, "updateFlatToFirestore update is complete")
+            }.addOnSuccessListener {
+                Log.i(TAG, "updateFlatToFirestore update is successful")
+            }.addOnFailureListener{
+                Log.e(TAG, "updateFlatToFirestore update is fail")
+            }.addOnCanceledListener {
+                Log.e(TAG, "updateFlatToFirestore update is cancel")
+            }.await()
+    } catch (e: FirebaseFirestoreException){
+        Log.e(TAG, "updateFlatToFirestore: $e")
+    }
+}
+
+// Обновляем данные администратора
+suspend fun updateAdminInFirestore(data: Admin){
+    try {
+        Firebase.firestore.collection("Admin").document(getUserId()).set(data)
+            .addOnCompleteListener(){
+                Log.i(TAG, "updateAdminInFirestore save is complete")
+            }.addOnSuccessListener {
+                Log.i(TAG, "updateAdminInFirestore save is successful")
+            }.addOnFailureListener{
+                Log.e(TAG, "updateAdminInFirestore save is fail")
+            }.addOnCanceledListener {
+                Log.e(TAG, "updateAdminInFirestore save is cancel")
+            }.await()
+    } catch (e: FirebaseFirestoreException){
+        Log.e(TAG, "updateAdminInFirestore: $e")
+    }
 }
 
 // Получаем модель квартиры из базы данных
@@ -51,41 +165,16 @@ suspend fun getFlatFromFirestore(flatId: String) : Flat {
     return flat
 }
 
-// Изменяем модель квартиры в базе данных
-// если успешно, то сообщение вернёт идентификатор квартиры
-suspend fun updateFlatToFirestore(flatId: String, data: Flat, listener: ((isSuccessful: Boolean, msg: String) -> Unit)){
-    try {
-        Firebase.firestore
-            .collection("Flat")
-            .document(flatId)
-            .set(data)
-            .addOnCompleteListener(){
-                Log.i(TAG, "updateFlatToFirestore update is complete")
-                listener.invoke(true, flatId)
-            }.addOnSuccessListener {
-                Log.i(TAG, "updateFlatToFirestore update is successful")
-            }.addOnFailureListener{
-                Log.e(TAG, "updateFlatToFirestore update is fail")
-            }.addOnCanceledListener {
-                Log.e(TAG, "updateFlatToFirestore update is cancel")
-            }.await()
-    } catch (e: FirebaseFirestoreException){
-        Log.e(TAG, "updateFlatToFirestore: $e")
-    }
-}
-
-// Создать модель квартиры в базе данных
-// если успешно, то сообщение вернёт идентификатор квартиры
-suspend fun createFlatInFirestore(data: Flat, admin: Admin, listener: (isSuccessful: Boolean, msg: String) -> Unit){
+// Создать модель квартиры в базе данных вернёт идентификатор квартиры
+suspend fun createFlatInFirestore(data: Flat) : String{
     var id = getUserId()
 
     try {
         data.owner = id
         Firebase.firestore.collection("Flat").add(data)
             .addOnCompleteListener(){
-                id = it.result.id
-                listener.invoke(true, id)
                 Log.i(TAG, "createFlatInFirestore is complete")
+                id = it.result.id
             }
             .addOnSuccessListener {
                 Log.i(TAG, "createFlatInFirestore save is successful")
@@ -98,31 +187,11 @@ suspend fun createFlatInFirestore(data: Flat, admin: Admin, listener: (isSuccess
     } catch (e: FirebaseFirestoreException){
         Log.e(TAG, "createFlatInFirestore: $e")
     }
+
+    return id
 }
 
-// Изменяем модель квартиры в базе данных
-// если успешно, то сообщение вернёт идентификатор админа
-suspend fun updateAdminInFirestore(adminId: String, data: Admin, listener: ((isSuccessful: Boolean, msg:String) -> Unit)){
-    try {
-        Firebase.firestore.collection("Admin").document(adminId).set(data)
-            .addOnCompleteListener(){
-                Log.i(TAG, "updateAdminInFirestore save is complete")
-                listener.invoke(true, adminId)
-            }
-            .addOnSuccessListener {
-                Log.i(TAG, "updateAdminInFirestore save is successful")
-            }.addOnFailureListener{
-                Log.e(TAG, "updateAdminInFirestore save is fail")
-            }.addOnCanceledListener {
-                Log.e(TAG, "updateAdminInFirestore save is cancel")
-            }.await()
-    } catch (e: FirebaseFirestoreException){
-        Log.e(TAG, "updateAdminInFirestore: $e")
-    }
-}
-
-// Удаляем данные из администратора
-// если успешно, то сообщение вернёт идентификатор админа
+// Удаляем данные о квартире из администратора
 suspend fun deleteFlatFromAdminFromFirestore(flatId: String, admin: Admin){
     var newList: List<String> = emptyList()
 
@@ -212,7 +281,7 @@ suspend fun getFlatListFromFirestore(admin: Admin) : List<Flat> {
                 for (i in it.result)
                     if (admin.flatList.contains(i.id)) {
                         val f = i.toObject(Flat::class.java)
-                        f.flatId = i.id;
+                        f.flatId = i.id
                         list += f
                     }
 

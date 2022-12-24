@@ -75,8 +75,7 @@ dependencies {
 
     //Зависимость для изображений
     implementation("io.coil-kt:coil-compose:1.3.1")
-//    implementation ("com.github.skydoves:landscapist-glide:2.1.0")
-//    implementation("com.github.bumptech.glide:glide:4.11.0")
+    implementation ("com.github.bumptech.glide:compose:1.0.0-alpha.1")
 
     // Зависимость для календаря
     implementation ("io.github.boguszpawlowski.composecalendar:composecalendar:1.0.2")

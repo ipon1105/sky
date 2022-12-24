@@ -18,6 +18,7 @@
     <string name="imageDescriptionAdd">Add Icon</string>
     <string name="imageDescriptionArrowDropDown">Arrow Drop Down Icon</string>
     <string name="imageDescriptionSetting">Arrow Drop Down Icon</string>
+    <string name="imageDescriptionClose">Close Icon</string>
 
     <!-- General -->
     <string name="phone">Phone</string>
@@ -123,4 +124,6 @@
     <string name="workerSeeDirty">Workers see dirty apartments</string>
     <string name="workerSeeBusy">Workers see busy apartments</string>
 
+    <string name="editorGoBackError">It is not possible to do anything before the update is completed</string>
+    <string name="editorMaxCountError">You can\'t add more than 5 images</string>
 </resources>

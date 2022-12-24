@@ -1,6 +1,7 @@
 plugins {
     kotlin("multiplatform")
     id("com.android.library")
+    id("com.google.gms.google-services")
 }
 
 kotlin {
@@ -53,4 +54,7 @@ android {
         minSdk = 21
         targetSdk = 32
     }
+}
+dependencies {
+    implementation("com.google.firebase:firebase-storage-ktx:20.1.0")
 }
