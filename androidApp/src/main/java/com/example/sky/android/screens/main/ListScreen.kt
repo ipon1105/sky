@@ -30,10 +30,11 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import coil.annotation.ExperimentalCoilApi
-import coil.compose.rememberImagePainter
+import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
+import com.bumptech.glide.integration.compose.GlideImage
 import com.example.sky.android.composables.NoInternet
 import com.example.sky.android.models.ListViewModel
-import com.example.sky.android.models.data.Flat
+import com.example.sky.android.models.data.CardFlat
 import com.example.sky.android.utils.connection.ConnectionState
 import com.example.sky.android.utils.connection.connectivityState
 import com.example.sky.ui.theme.*
@@ -148,18 +149,18 @@ fun ListScreen(navController: NavHostController) {
         LazyColumn(modifier = Modifier.padding(horizontal = ComponentDiffNormal)){
 
             itemsIndexed(
-                items = viewModel.flatList
+                items = viewModel.cardFlatList + null
             ){ index, item ->
 
                 if (item == null)
                     AddNewFlat(navController = navController)
-                else if (item.address.contains(viewModel.search, ignoreCase = true))
+                else if (item.flat.address.contains(viewModel.search, ignoreCase = true))
                 {
-                    if (viewModel.isBtnFreeOn && item.status == 0 )
+                    if (viewModel.isBtnFreeOn && item.flat.status == 0 )
                         FlatElementList(item, navController = navController)
-                    if (viewModel.isBtnDirtyOn && item.status == 1)
+                    if (viewModel.isBtnDirtyOn && item.flat.status == 1)
                         FlatElementList(item, navController = navController)
-                    if (viewModel.isBtnBusyOn && item.status == 2)
+                    if (viewModel.isBtnBusyOn && item.flat.status == 2)
                         FlatElementList(item, navController = navController)
                 }
 
@@ -200,9 +201,9 @@ fun ListScreen(navController: NavHostController) {
         NoInternet(onDismissRequest = {viewModel.setShowDialog(false)}, btnOnClick = {viewModel.setShowDialog(false)})
 }
 
-@OptIn(ExperimentalCoilApi::class)
+@OptIn(ExperimentalCoilApi::class, ExperimentalGlideComposeApi::class)
 @Composable
-fun FlatElementList(el: Flat, navController: NavHostController){
+fun FlatElementList(el: CardFlat, navController: NavHostController){
     val cardElevation = 15.dp
     val cardSize = 100.dp
     val status = 30.dp
@@ -215,7 +216,7 @@ fun FlatElementList(el: Flat, navController: NavHostController){
             .clickable {
                 viewModel.cardClickFlatInfo(
                     navController = navController,
-                    flatId = el.flatId
+                    flatId = el.flat.flatId
                 )
             },
         shape = RoundedCornerShape(size = largeShape),
@@ -231,7 +232,7 @@ fun FlatElementList(el: Flat, navController: NavHostController){
                     .background(color = DarkGray, shape = RoundedCornerShape(size = largeShape))
             ){
                 // Изображение по умолчаниюы
-                if (el.photos.size == 0)
+                if (el.flat.photos.size == 0)
                     Image(
                         modifier = Modifier.fillMaxSize(),
                         imageVector = ImageVector.vectorResource(id = R.drawable.no_image),
@@ -241,14 +242,14 @@ fun FlatElementList(el: Flat, navController: NavHostController){
 
                 //Изображение из сети
                 else
-                    Image(
-                        //TODO: Сделать загрузку изображений из базы данных firebase
-                        painter = rememberImagePainter("https://picsum.photos/300/300"),
-                        contentDescription = stringResource(id = R.string.imageDescriptionFlatPhoto),
+                    GlideImage(
                         modifier = Modifier
                             .fillMaxSize()
                             .clip(RoundedCornerShape(size = largeShape)),
+                        model = el.photoUri,
+                        contentDescription = stringResource(id = R.string.imageDescriptionFlatPhoto),
                     )
+
             }
 
             // Подробнее
@@ -261,7 +262,7 @@ fun FlatElementList(el: Flat, navController: NavHostController){
                         modifier = Modifier
                             .padding(start = ComponentDiffSmall, top = ComponentDiffSmall)
                             .weight(9f),
-                        text = el.address.uppercase(),
+                        text = el.flat.address.uppercase(),
                         color = GrayTextColor,
                         fontWeight = FontWeight.Bold,
                         overflow = TextOverflow.Ellipsis,
@@ -274,7 +275,7 @@ fun FlatElementList(el: Flat, navController: NavHostController){
                             .size(status)
                             .background(
                                 shape = RoundedCornerShape(bottomStart = shortShape),
-                                color = if (el.status == 0) FlatGreen else if (el.status == 1) FlatYellow else FlatRed
+                                color = if (el.flat.status == 0) FlatGreen else if (el.flat.status == 1) FlatYellow else FlatRed
                             )
                             .weight(1.28f)
                     ){}
@@ -286,7 +287,7 @@ fun FlatElementList(el: Flat, navController: NavHostController){
                         .fillMaxHeight()
                         .padding(ComponentDiffSmall),
                     maxLines = 3,
-                    text = el.description,
+                    text = el.flat.description,
                     overflow = TextOverflow.Ellipsis,
                     softWrap = true,
                     color = GrayTextColor,

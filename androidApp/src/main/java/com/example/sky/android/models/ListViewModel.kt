@@ -1,9 +1,12 @@
 package com.example.sky.android.models
 
+import android.net.Uri
+import android.util.Log
 import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
+import com.example.sky.android.models.data.CardFlat
 import com.example.sky.android.models.data.Flat
 import com.example.sky.navigation.NavRoute
 import kotlinx.coroutines.Dispatchers
@@ -31,6 +34,8 @@ class ListViewModel(): ViewModel(){
     var dialogMsg by mutableStateOf("")
         private set
 
+    var cardFlatList by mutableStateOf(listOf<CardFlat>())
+        private set
     var flatList by mutableStateOf(getBaseList())
         private set
 
@@ -66,7 +71,7 @@ class ListViewModel(): ViewModel(){
 
     // Обновить список
     fun updateList(){
-        if (isOneUpdate) {
+        if (isOneUpdate && !isUpdating) {
             isUpdating = true
 
             // Паралельная работа
@@ -74,10 +79,19 @@ class ListViewModel(): ViewModel(){
 
                 // Попытка загрузки данных
                 try {
+                    Log.d("viewModel", "1 - cardFlatList = $cardFlatList")
+                    cardFlatList = emptyList()
+                    Log.d("viewModel", "2 - cardFlatList = $cardFlatList")
                     val admin = getAdminFromFirestore()
                     val list = getFlatListFromFirestore(admin)
 
-                    setListFlat(list)
+                    for (l in list){
+                        if (l.photos.isEmpty())
+                            cardFlatList += CardFlat(l, Uri.EMPTY)
+                        else
+                            cardFlatList += CardFlat(l, getUriLink(l.photos[0]))
+                    }
+                    Log.d("viewModel", "cardFlatList = ${cardFlatList.size}")
 
                     isOneUpdate = false
                     isUpdating = false
@@ -99,7 +113,7 @@ class ListViewModel(): ViewModel(){
         if (!internet)
             showDialog = true
         else {
-            val flatId = "null";
+            val flatId = "null"
             navController.navigate(route = NavRoute.Editor.route + "/${flatId}")
         }
     }
@@ -115,13 +129,8 @@ class ListViewModel(): ViewModel(){
     // Загрузить список квартир по умолчанию
     fun refreshList(){
         flatList = getBaseList()
+        cardFlatList = emptyList()
         isOneUpdate = true
-    }
-
-    // Переопределить список квартир
-    private fun setListFlat(list: List<Flat>){
-        flatList = list
-        flatList += null
     }
 
     // Возвращает пустой лист
