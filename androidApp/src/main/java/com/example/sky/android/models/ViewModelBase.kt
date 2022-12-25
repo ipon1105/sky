@@ -541,6 +541,25 @@ suspend fun deleteFlatFromFirestore(flatId: String) : String{
 }
 
 // Получаем запись Работника из базы данных
+suspend fun updateWorker(worker: Worker){
+    try {
+        Firebase.firestore.collection("Worker").document(worker.auth).set(worker)
+            .addOnCompleteListener(){
+                Log.i(TAG, "getWorkerFromFirestore is complete")
+                Log.i(TAG, "getWorkerFromFirestore worker: $worker")
+            }.addOnSuccessListener {
+                Log.i(TAG, "getWorkerFromFirestore is successful")
+            }.addOnFailureListener{
+                Log.e(TAG, "getWorkerFromFirestore is fail")
+            }.addOnCanceledListener {
+                Log.e(TAG, "getWorkerFromFirestore is cancel")
+            }.await()
+    } catch (e: FirebaseFirestoreException){
+        Log.e(TAG, "getWorkerFromFirestore: $e")
+    }
+}
+
+// Получаем запись Работника из базы данных
 suspend fun getWorkerListFromFirestore(worker: Worker) : List<Flat> {
     var list = emptyList<Flat>()
 
@@ -556,6 +575,34 @@ suspend fun getWorkerFromFirestore() : Worker{
 
     try {
         Firebase.firestore.collection("Worker").document(getUserId()).get()
+            .addOnCompleteListener(){ task ->
+                Log.i(TAG, "getWorkerFromFirestore is complete")
+
+                val document = task.result.toObject(Worker::class.java)
+                if (document != null)
+                    worker = document
+
+                Log.i(TAG, "getWorkerFromFirestore worker: $worker")
+            }.addOnSuccessListener {
+                Log.i(TAG, "getWorkerFromFirestore is successful")
+            }.addOnFailureListener{
+                Log.e(TAG, "getWorkerFromFirestore is fail")
+            }.addOnCanceledListener {
+                Log.e(TAG, "getWorkerFromFirestore is cancel")
+            }.await()
+    } catch (e: FirebaseFirestoreException){
+        Log.e(TAG, "getWorkerFromFirestore: $e")
+    }
+
+    return worker
+}
+
+// Получаем запись Работника из базы данных
+suspend fun getWorkerFromFirestore(id: String) : Worker{
+    var worker = Worker()
+
+    try {
+        Firebase.firestore.collection("Worker").document(id).get()
             .addOnCompleteListener(){ task ->
                 Log.i(TAG, "getWorkerFromFirestore is complete")
 

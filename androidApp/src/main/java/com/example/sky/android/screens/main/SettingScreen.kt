@@ -34,6 +34,7 @@ import com.example.sky.android.models.WorkerModel
 import com.example.sky.android.composables.RatingBar
 import com.example.sky.android.models.authorization.LoginViewModel
 import com.example.sky.android.models.data.SettingViewModel
+import com.example.sky.android.models.data.UserData
 import com.example.sky.navigation.NavRoute
 import com.example.sky.ui.theme.*
 
@@ -252,19 +253,6 @@ fun GeneralSettingsCard(){
 fun WorkerSettingsCard(navController: NavHostController, viewModel: SettingViewModel){
     val maxLazyHeight = 300.dp
     val cardElevation = 5.dp
-    var isFreeShow by remember{mutableStateOf(true)}
-    var isDirtyShow by remember{mutableStateOf(true)}
-    var isBusyShow by remember{mutableStateOf(true)}
-
-    // TODO: Подгружать список работников из интернета
-    var workers = listOf(
-        WorkerModel(1u, "photo1", "Name", "Surname", "Patronymicddddddddddddddddddddddddddddddddddddd", "Description"),
-        WorkerModel(2u, "photo2", "Name", "Surname", "Patronymic", "Description"),
-        WorkerModel(5u, "photo2", "Name", "Surname", "Patronymic", "Description"),
-        WorkerModel(5u, "photo2", "Name", "Surname", "Patronymic", "Description"),
-        WorkerModel(5u, "photo2", "Name", "Surname", "Patronymic", "Description"),
-        null
-    )
 
     // Карточка
     Card(
@@ -290,90 +278,6 @@ fun WorkerSettingsCard(navController: NavHostController, viewModel: SettingViewM
                 maxLines = 1,
             )
 
-            // TODO: Сделать настройку доступа к свободным квартирам
-            // Контейнер с Чекбоксом
-            Row(modifier = Modifier
-                .padding(top = ComponentDiffNormal, start = ComponentDiffNormal)
-                .clickable { isFreeShow = !isFreeShow }
-            ){
-                // Свободные
-                CompositionLocalProvider(LocalMinimumTouchTargetEnforcement provides false){
-                    Checkbox(
-                        checked = isFreeShow,
-                        onCheckedChange = { isFreeShow = !isFreeShow },
-                        colors = CheckboxDefaults.colors(
-                            uncheckedColor = DarkGray,
-                            checkedColor = HeaderMainColorMain,
-                        )
-                    )
-                }
-
-                // Текст подсказка чекбокса
-                Text(
-                    text = stringResource(id = R.string.workerSeeFree),
-                    modifier = Modifier
-                        .align(Alignment.CenterVertically)
-                        .padding(start = ComponentDiffNormal),
-                    color = GrayTextColor
-                )
-            }
-
-            // TODO: Сделать настройку доступа к грязным квартирам
-            // Контейнер с Чекбоксом
-            Row(modifier = Modifier
-                .padding(top = ComponentDiffNormal, start = ComponentDiffNormal)
-                .clickable { isDirtyShow = !isDirtyShow }
-            ){
-                // Грязные
-                CompositionLocalProvider(LocalMinimumTouchTargetEnforcement provides false){
-                    Checkbox(
-                        checked = isDirtyShow,
-                        onCheckedChange = { isDirtyShow = !isDirtyShow },
-                        colors = CheckboxDefaults.colors(
-                            uncheckedColor = DarkGray,
-                            checkedColor = HeaderMainColorMain,
-                        )
-                    )
-                }
-
-                // Текст подсказка чекбокса
-                Text(
-                    text = stringResource(id = R.string.workerSeeDirty),
-                    modifier = Modifier
-                        .align(Alignment.CenterVertically)
-                        .padding(start = ComponentDiffNormal),
-                    color = GrayTextColor
-                )
-            }
-
-            // TODO: Сделать настройку доступа к занятым квартирам
-            // Контейнер с Чекбоксом
-            Row(modifier = Modifier
-                .padding(top = ComponentDiffNormal, start = ComponentDiffNormal)
-                .clickable { isBusyShow = !isBusyShow }
-            ){
-                // Занятые
-                CompositionLocalProvider(LocalMinimumTouchTargetEnforcement provides false){
-                    Checkbox(
-                        checked = isBusyShow,
-                        onCheckedChange = { isBusyShow = !isBusyShow },
-                        colors = CheckboxDefaults.colors(
-                            uncheckedColor = DarkGray,
-                            checkedColor = HeaderMainColorMain,
-                        )
-                    )
-                }
-
-                // Текст подсказка чекбокса
-                Text(
-                    text = stringResource(id = R.string.workerSeeBusy),
-                    modifier = Modifier
-                        .align(Alignment.CenterVertically)
-                        .padding(start = ComponentDiffNormal),
-                    color = GrayTextColor
-                )
-            }
-
             // Список работников
             LazyColumn(
                 modifier = Modifier
@@ -381,11 +285,11 @@ fun WorkerSettingsCard(navController: NavHostController, viewModel: SettingViewM
                     .height(maxLazyHeight)
                     .padding(top = ComponentDiffNormal)
             ){
-                itemsIndexed(items = workers){index, item ->
+                itemsIndexed(items = viewModel.workerList + null){index, item ->
                     if (item == null)
-                        AddNewWorker(navController = navController)
+                        AddNewWorker(navController = navController, viewModel)
                     else
-                        WorkerCard(navController = navController, item)
+                        WorkerCard(navController = navController, item, viewModel, index)
                 }
             }
         }
@@ -393,14 +297,13 @@ fun WorkerSettingsCard(navController: NavHostController, viewModel: SettingViewM
 }
 
 @Composable
-fun WorkerCard(navController: NavHostController, worker: WorkerModel){
+fun WorkerCard(navController: NavHostController, userData: UserData, viewModel: SettingViewModel, index: Int){
     val cardElevation = 15.dp
     val cardSize = 80.dp
     val imageSize = 50.dp
     val difSizes = 15.dp
 
     // TODO: Сделать переход на аккаунт работника по клику на карточку
-    // ModelView
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -414,16 +317,16 @@ fun WorkerCard(navController: NavHostController, worker: WorkerModel){
         // Главное содержимое
         Row(modifier = Modifier.fillMaxSize()){
             // Изображение работника
-            Image(
-                //TODO: Сделать загрузку изображения из базы данных firebase
-                imageVector = ImageVector.vectorResource(id = R.drawable.map),
+            Icon(
+                imageVector = ImageVector.vectorResource(id = R.drawable.no_image),
                 contentDescription = stringResource(id = R.string.imageDescriptionFlatPhoto),
                 modifier = Modifier
                     .padding(start = difSizes)
                     .size(imageSize)
                     .clip(shape = CircleShape)
                     .background(color = DarkGray)
-                    .align(Alignment.CenterVertically)
+                    .align(Alignment.CenterVertically),
+                tint = Color.White,
             )
 
             // Правая часть содержимого
@@ -432,11 +335,12 @@ fun WorkerCard(navController: NavHostController, worker: WorkerModel){
                 Column(
                     modifier = Modifier
                         .padding(start = ComponentDiffSmall, top = ComponentDiffSmall)
-                        .weight(9f),
+                        .weight(9f)
+                        .clickable { viewModel.detail(navController, index) },
                 ) {
                     // ФИО
                     Text(
-                        text = "${worker.surname} ${worker.name} ${worker.patronymic}",
+                        text = "${userData.surname} ${userData.name} ${userData.patronymic}",
                         color = GrayTextColor,
                         fontWeight = FontWeight.Bold,
                         overflow = TextOverflow.Ellipsis,
@@ -445,7 +349,7 @@ fun WorkerCard(navController: NavHostController, worker: WorkerModel){
 
                     // Телефон
                     Text(
-                        text = "Телефон ${worker.description}",
+                        text = "Телефон ${userData.telephone}",
                         color = GrayTextColor,
                         fontWeight = FontWeight.Bold,
                         overflow = TextOverflow.Ellipsis,
@@ -453,8 +357,6 @@ fun WorkerCard(navController: NavHostController, worker: WorkerModel){
                     )
                 }
 
-                // TODO: Сделать удаление работника из списка работников
-                // TODO: Сделать диалог с вопросом о удалении работника
                 // Удалить
                 Icon(
                     imageVector = Icons.Filled.Delete,
@@ -462,9 +364,9 @@ fun WorkerCard(navController: NavHostController, worker: WorkerModel){
                     modifier = Modifier
                         .size(imageSize)
                         .weight(1.28f)
-                        .align(Alignment.CenterVertically),
+                        .align(Alignment.CenterVertically)
+                        .clickable { viewModel.deleteElement(index) },
                     tint = FlatRed,
-
                 )
             }
         }
@@ -472,7 +374,7 @@ fun WorkerCard(navController: NavHostController, worker: WorkerModel){
 }
 
 @Composable
-fun AddNewWorker(navController: NavHostController){
+fun AddNewWorker(navController: NavHostController, viewModel: SettingViewModel){
     val cardSize = 80.dp
     val imgSize = 30.dp
     val borderWeight = 8.dp
@@ -481,7 +383,7 @@ fun AddNewWorker(navController: NavHostController){
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = verticalNormal)
-            .clickable { navController.navigate(route = NavRoute.WorkerSearch.route) }
+            .clickable { viewModel.newFlat(navController) }
             .height(cardSize)
             .border(
                 border = BorderStroke(borderWeight, color = lightGray),

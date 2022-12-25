@@ -26,6 +26,7 @@ class AccountViewModel:ViewModel() {
         viewModelScope.launch(Dispatchers.Main) {
             try {
                 var data = UserData()
+
                 if (getStatus(getUserId()) == 2)
                     data = getUserData(getAdminFromFirestore().info)
                 else

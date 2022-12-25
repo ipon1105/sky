@@ -171,21 +171,20 @@ fun AccountCard(data: UserData, viewModel: AccountViewModel, navController: NavH
                         )
 
                         //Статус
-                        Box(
-                            modifier = Modifier
-                                .size(status)
-                                .background(
-                                    shape = RoundedCornerShape(bottomStart = shortShape),
-                                    color = DarkGray
-                                )
-                                .weight(2f)
-                                .clickable { viewModel.editAccount(navController) }
-                        ){
-                            Icon(modifier = Modifier.fillMaxSize().padding(ComponentDiffSmall),imageVector = Icons.Filled.Edit, contentDescription = "", tint = Color.White)
-                        }
+//                        Box(
+//                            modifier = Modifier
+//                                .size(status)
+//                                .background(
+//                                    shape = RoundedCornerShape(bottomStart = shortShape),
+//                                    color = DarkGray
+//                                )
+//                                .weight(2f)
+//                                .clickable { viewModel.editAccount(navController) }
+//                        ){
+//                            Icon(modifier = Modifier.fillMaxSize().padding(ComponentDiffSmall),imageVector = Icons.Filled.Edit, contentDescription = "", tint = Color.White)
+//                        }
                     }
 
-                    // TODO: Использовать SharedPreference для сохранения данных
 
                     Row() {
                         mainText(text = data.name, fontSize = 18.sp)
