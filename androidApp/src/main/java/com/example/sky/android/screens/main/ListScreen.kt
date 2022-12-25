@@ -147,12 +147,11 @@ fun ListScreen(navController: NavHostController) {
 
         // Список квартир
         LazyColumn(modifier = Modifier.padding(horizontal = ComponentDiffNormal)){
-
             itemsIndexed(
-                items = viewModel.cardFlatList + null
+                items = if (viewModel.status == 2) viewModel.cardFlatList + null else viewModel.cardFlatList
             ){ index, item ->
 
-                if (item == null)
+                if (item == null )
                     AddNewFlat(navController = navController)
                 else if (item.flat.address.contains(viewModel.search, ignoreCase = true))
                 {

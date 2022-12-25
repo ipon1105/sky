@@ -4,5 +4,5 @@ data class Worker(
     val auth: String = "",
     val info: String = "",
     val description: String = "",
-    //val adminList: List<String>,
+    val adminList: List<String> = emptyList(),
 )

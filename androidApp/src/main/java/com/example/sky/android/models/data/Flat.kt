@@ -8,4 +8,5 @@ data class Flat(
     var cleaningCost: String = "",
     var flatId: String = "",
     var status: Int = 0,
+    var detail: String = "",
 )

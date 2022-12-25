@@ -14,6 +14,9 @@ import kotlinx.coroutines.launch
 
 // Модель для экрана со списком квартир
 class ListViewModel(): ViewModel(){
+    var status by mutableStateOf(0)
+        private set
+
     var internet by mutableStateOf(true)
         private set
     var showDialog by mutableStateOf(false)
@@ -39,36 +42,6 @@ class ListViewModel(): ViewModel(){
     var flatList by mutableStateOf(getBaseList())
         private set
 
-    @JvmName("setInternet1")
-    fun setInternet(value: Boolean){
-        internet = value
-    }
-
-    @JvmName("setShowDialog1")
-    fun setShowDialog(value: Boolean){
-        showDialog = value
-    }
-
-    @JvmName("setSearch1")
-    fun setSearch(value: String){
-        search = value
-    }
-
-    @JvmName("setBtnFreeOn1")
-    fun setBtnFreeOn(value: Boolean){
-        isBtnFreeOn = value
-    }
-
-    @JvmName("setBtnDirtyOn1")
-    fun setBtnDirtyOn(value: Boolean){
-        isBtnDirtyOn = value
-    }
-
-    @JvmName("setBtnBusyOn1")
-    fun setBtnBusyOn(value: Boolean){
-        isBtnBusyOn = value
-    }
-
     // Обновить список
     fun updateList(){
         if (isOneUpdate && !isUpdating) {
@@ -79,19 +52,32 @@ class ListViewModel(): ViewModel(){
 
                 // Попытка загрузки данных
                 try {
-                    Log.d("viewModel", "1 - cardFlatList = $cardFlatList")
-                    cardFlatList = emptyList()
-                    Log.d("viewModel", "2 - cardFlatList = $cardFlatList")
-                    val admin = getAdminFromFirestore()
-                    val list = getFlatListFromFirestore(admin)
+                    status = getStatus(getUserId())
 
-                    for (l in list){
-                        if (l.photos.isEmpty())
-                            cardFlatList += CardFlat(l, Uri.EMPTY)
-                        else
-                            cardFlatList += CardFlat(l, getUriLink(l.photos[0]))
+                    // Загружаем со стороны администратора
+                    if (status == 2) {
+                        cardFlatList = emptyList()
+                        val admin = getAdminFromFirestore()
+                        val list = getFlatListFromFirestore(admin)
+
+                        for (l in list) {
+                            if (l.photos.isEmpty())
+                                cardFlatList += CardFlat(l, Uri.EMPTY)
+                            else
+                                cardFlatList += CardFlat(l, getUriLink(l.photos[0]))
+                        }
+                    // Загружаем со стороны Уборщика
+                    } else {
+                        val worker = getWorkerFromFirestore()
+                        val list = getWorkerListFromFirestore(worker)
+
+                        for (l in list) {
+                            if (l.photos.isEmpty())
+                                cardFlatList += CardFlat(l, Uri.EMPTY)
+                            else
+                                cardFlatList += CardFlat(l, getUriLink(l.photos[0]))
+                        }
                     }
-                    Log.d("viewModel", "cardFlatList = ${cardFlatList.size}")
 
                     isOneUpdate = false
                     isUpdating = false
@@ -136,5 +122,35 @@ class ListViewModel(): ViewModel(){
     // Возвращает пустой лист
     private fun getBaseList():List<Flat?>{
         return listOf(null)
+    }
+
+    @JvmName("setInternet1")
+    fun setInternet(value: Boolean){
+        internet = value
+    }
+
+    @JvmName("setShowDialog1")
+    fun setShowDialog(value: Boolean){
+        showDialog = value
+    }
+
+    @JvmName("setSearch1")
+    fun setSearch(value: String){
+        search = value
+    }
+
+    @JvmName("setBtnFreeOn1")
+    fun setBtnFreeOn(value: Boolean){
+        isBtnFreeOn = value
+    }
+
+    @JvmName("setBtnDirtyOn1")
+    fun setBtnDirtyOn(value: Boolean){
+        isBtnDirtyOn = value
+    }
+
+    @JvmName("setBtnBusyOn1")
+    fun setBtnBusyOn(value: Boolean){
+        isBtnBusyOn = value
     }
 }

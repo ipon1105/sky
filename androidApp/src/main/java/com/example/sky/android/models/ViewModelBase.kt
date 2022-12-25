@@ -466,6 +466,16 @@ suspend fun deleteFlatFromFirestore(flatId: String) : String{
 }
 
 // Получаем запись Работника из базы данных
+suspend fun getWorkerListFromFirestore(worker: Worker) : List<Flat> {
+    var list = emptyList<Flat>()
+
+    for (el in worker.adminList)
+        list += getFlatListFromFirestore(getAdminFromFirestore(el))
+
+    return list
+}
+
+// Получаем запись Работника из базы данных
 suspend fun getWorkerFromFirestore() : Worker{
     var worker = Worker()
 
@@ -491,6 +501,34 @@ suspend fun getWorkerFromFirestore() : Worker{
     }
 
     return worker
+}
+
+// Получаем запись администратора из базы данных
+suspend fun getAdminFromFirestore(adminId: String) : Admin{
+    var admin = Admin()
+
+    try {
+        Firebase.firestore.collection("Admin").document(adminId).get()
+            .addOnCompleteListener(){ task ->
+                Log.i(TAG, "getAdminFromFirestore load is complete")
+
+                val document = task.result.toObject(Admin::class.java)
+                if (document != null)
+                    admin = document
+
+                Log.i(TAG, "getAdminFromFirestore admin: $admin")
+            }.addOnSuccessListener {
+                Log.i(TAG, "getAdminFromFirestore save is successful")
+            }.addOnFailureListener{
+                Log.e(TAG, "getAdminFromFirestore save is fail")
+            }.addOnCanceledListener {
+                Log.e(TAG, "getAdminFromFirestore save is cancel")
+            }.await()
+    } catch (e: FirebaseFirestoreException){
+        Log.e(TAG, "getAdminFromFirestore: $e")
+    }
+
+    return admin
 }
 
 // Получаем запись администратора из базы данных
