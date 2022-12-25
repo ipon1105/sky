@@ -1,12 +1,18 @@
 package com.example.sky.android.screens.main
 
 
+import android.annotation.SuppressLint
+import android.net.Uri
 import android.os.Build
+import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.*
@@ -20,6 +26,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.AnnotatedString
@@ -27,36 +34,42 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import coil.annotation.ExperimentalCoilApi
+import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
+import com.bumptech.glide.integration.compose.GlideImage
 import com.example.sky.android.R
 import com.example.sky.android.composables.MyCircle
+import com.example.sky.android.composables.mToast
+import com.example.sky.android.composables.ui.*
+import com.example.sky.android.models.DealViewModel
+import com.example.sky.android.models.FlatInfoViewModel
+import com.example.sky.android.models.data.Deal
+import com.example.sky.android.utils.connection.getDateTime
 import com.example.sky.ui.theme.*
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.HorizontalPagerIndicator
 import com.google.accompanist.pager.rememberPagerState
-import java.util.*
-import androidx.compose.runtime.Composable
-import coil.annotation.ExperimentalCoilApi
-import coil.compose.rememberImagePainter
-import com.example.sky.android.models.FlatInfoViewModel
 import io.github.boguszpawlowski.composecalendar.SelectableCalendar
 import io.github.boguszpawlowski.composecalendar.rememberSelectableCalendarState
 import io.github.boguszpawlowski.composecalendar.selection.SelectionMode
-import java.time.DayOfWeek
-import java.time.YearMonth
+import java.sql.Timestamp
+import java.text.SimpleDateFormat
+import java.time.*
+import java.util.*
 
-
-
-@OptIn(ExperimentalPagerApi::class, ExperimentalCoilApi::class)
+@OptIn(ExperimentalPagerApi::class, ExperimentalCoilApi::class, ExperimentalGlideComposeApi::class)
 @Composable
 fun MoreDetailBlock(viewModel: FlatInfoViewModel){
 
     // Из одной квартиры выносит список квартир, которые собирается отображать (в виде ссылок для скачивания)
-    var imageList = viewModel.flat.photos
+    var imageList: List<Uri?> = viewModel.downloadImageList
     if (imageList.size == 0)
-        imageList += "no_image"
+        imageList += null
 
     val pagerState = rememberPagerState(initialPage = 0)
     val maxHorizontalPagerHeight = 200.dp
@@ -90,7 +103,7 @@ fun MoreDetailBlock(viewModel: FlatInfoViewModel){
                         CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = mainColor)
 
                     // У модели нет изображений
-                    else if (imageList[0].equals("no_image"))
+                    else if (imageList[0] == null)
                         // Изображение по умолчаниюы
                         Image(
                             modifier = Modifier.fillMaxSize(),
@@ -101,10 +114,10 @@ fun MoreDetailBlock(viewModel: FlatInfoViewModel){
 
                     // У модели есть свои изобржения
                     else
-                        // Изображение из сети
-                        Image(
+                    // Изображение из сети
+                        GlideImage(
                             modifier = Modifier.fillMaxSize(),
-                            painter = rememberImagePainter(imageList[page]),
+                            model = imageList[page],
                             contentDescription = stringResource(id = R.string.imageDescriptionFlatPhoto),
                         )
                 }
@@ -199,9 +212,15 @@ fun MoreDetailBlock(viewModel: FlatInfoViewModel){
     }
 }
 
+@OptIn(ExperimentalMaterialApi::class)
+@SuppressLint("UnrememberedMutableState")
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun CalendarBlock(){
+fun CalendarBlock(viewModel: FlatInfoViewModel){
+    var specViewModel = viewModel<DealViewModel>()
+    if (viewModel.flat.detail.isNotEmpty())
+        specViewModel.start(viewModel.flat.detail, LocalContext.current)
+
     Column(
         modifier = Modifier
             .padding(top = ComponentDiffLarge)
@@ -211,16 +230,84 @@ fun CalendarBlock(){
                 shape = RoundedCornerShape(largeShape)
             ),
     ) {
-        //TODO: Сделать русификацию
-        SelectableCalendar(
-            firstDayOfWeek = DayOfWeek.MONDAY,
-            calendarState = rememberSelectableCalendarState(
-                initialMonth = YearMonth.now(),
-                initialSelectionMode = SelectionMode.Period,
-            ),
-            modifier = Modifier.padding(ScreenArea),
+        var calendarState = rememberSelectableCalendarState(
+            initialMonth = YearMonth.now(),
+            initialSelectionMode = SelectionMode.Period,
         )
 
+        // Календарь
+        SelectableCalendar(
+            firstDayOfWeek = DayOfWeek.MONDAY,
+            calendarState = calendarState,
+            modifier = Modifier.padding(ScreenArea),
+            dayContent = { dayState ->
+                val cardSize = 50.dp
+                val circleSize = 30.dp
+                val circlePadding = 3.dp
+                val cardPadding = 3.dp
+                var cardElevation = 0.dp
+                if (dayState.isFromCurrentMonth)
+                    cardElevation = 2.dp
+                var color = Color.White
+
+                val date = dayState.date
+                val selectionState = dayState.selectionState
+                val isSelected = selectionState.isDateSelected(date)
+                val today = getDateTime(SimpleDateFormat("yyyy-MM-dd").parse(date.toString()).time)
+
+                // Разукрашиваем сделки
+                var deal: Deal? = specViewModel.isBetween(today)
+                if (deal != null)
+                    color = Color(deal.color)
+
+                Card(
+                    modifier = Modifier
+                        .size(cardSize)
+                        .background(color = Color.White)
+                        .padding(cardPadding),
+                    elevation = cardElevation,
+                    shape = RoundedCornerShape(shortShape),
+                    onClick = {
+                        selectionState.onDateSelected(date)
+                        if ( selectionState.selection.isNotEmpty()) {
+                            Log.d("viewModel", "ABX")
+                            var tmpDeal = specViewModel.isInside(
+                                getDateTime(SimpleDateFormat("yyyy-MM-dd").parse(selectionState.selection.first().toString()).time),
+                                getDateTime(SimpleDateFormat("yyyy-MM-dd").parse(selectionState.selection.last().toString()).time)
+                            )
+
+                            if (tmpDeal != null)
+                                specViewModel.setSelectedDeal(true, tmpDeal)
+                            else
+                                specViewModel.setSelectedDeal(false, null)
+                        }
+                        if (deal != null)
+                            specViewModel.setSelectedDeal(true, deal)
+                        else
+                            specViewModel.setSelectedDeal(false, null)
+                    },
+                    backgroundColor = if (isSelected) mainColor else Color.White
+                ) {
+
+                    Box(
+                        modifier = Modifier
+                            .size(circleSize)
+                            .padding(circlePadding)
+                            .background(color = color, shape = CircleShape)
+                    ){
+
+                        if (dayState.isCurrentDay){
+                            Text(text = "now", modifier = Modifier.align(Alignment.Center))
+                        } else
+                            Text(text = "${dayState.date.dayOfMonth.toString()}", modifier = Modifier.align(Alignment.Center))
+                    }
+                }
+
+            }
+        )
+
+        if (calendarState.selectionState.selection.isNotEmpty())
+            addDealBlock(viewModel = specViewModel, dateList = calendarState.selectionState.selection)
 
     }
 }
@@ -228,7 +315,8 @@ fun CalendarBlock(){
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun FlatInfoScreen(navController: NavHostController, flatId: String = ""){
-    val viewModel = FlatInfoViewModel(flatId)
+    val viewModel = viewModel<FlatInfoViewModel>()
+    viewModel.start(flatId, context = LocalContext.current)
 
     Scaffold(
         modifier = Modifier
@@ -261,31 +349,32 @@ fun FlatInfoScreen(navController: NavHostController, flatId: String = ""){
                     colorFilter = ColorFilter.tint(color = HeaderMainColorMain),
                 )
 
-                // Кнопки управления
-                Box(){
-                    // Кнопка настройки
-                    Image(
-                        imageVector = Icons.Rounded.Menu,
-                        contentDescription = stringResource(id = R.string.imageDescriptionBack),
-                        modifier = Modifier
-                            .padding(all = ComponentDiffNormal)
-                            .clickable { viewModel.setExpanded(!viewModel.expanded) },
-                        colorFilter = ColorFilter.tint(color = HeaderMainColorMain),
-                    )
+                if (viewModel.status == 2)
+                    // Кнопки управления
+                    Box(){
+                        // Кнопка настройки
+                        Image(
+                            imageVector = Icons.Rounded.Menu,
+                            contentDescription = stringResource(id = R.string.imageDescriptionBack),
+                            modifier = Modifier
+                                .padding(all = ComponentDiffNormal)
+                                .clickable { viewModel.setExpanded(!viewModel.expanded) },
+                            colorFilter = ColorFilter.tint(color = HeaderMainColorMain),
+                        )
 
-                    // Выпадающее меню
-                    DropdownMenu(
-                        expanded = viewModel.expanded,
-                        onDismissRequest = { viewModel.setExpanded(false) }
-                    ) {
-                        DropdownMenuItem(onClick = { viewModel.btnEditClick(navController) }) {
-                            Text(text = stringResource(id = R.string.edit))
-                        }
-                        DropdownMenuItem(onClick = { viewModel.btnDeleteClick()  }) {
-                            Text(text = stringResource(id = R.string.delete))
+                        // Выпадающее меню
+                        DropdownMenu(
+                            expanded = viewModel.expanded,
+                            onDismissRequest = { viewModel.setExpanded(false) }
+                        ) {
+                            DropdownMenuItem(onClick = { viewModel.btnEditClick(navController) }) {
+                                Text(text = stringResource(id = R.string.edit))
+                            }
+                            DropdownMenuItem(onClick = { viewModel.btnDeleteClick()  }) {
+                                Text(text = stringResource(id = R.string.delete))
+                            }
                         }
                     }
-                }
             }
         },
         content = {
@@ -312,7 +401,7 @@ fun FlatInfoScreen(navController: NavHostController, flatId: String = ""){
                 MoreDetailBlock(viewModel)
 
                 // Второй блок с календарём
-                CalendarBlock()
+                CalendarBlock(viewModel)
 
                 // Пробел
                 Spacer(modifier = Modifier.padding(bottom = ScreenArea))
@@ -379,9 +468,233 @@ fun FlatInfoScreen(navController: NavHostController, flatId: String = ""){
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
-@OptIn(ExperimentalPagerApi::class)
 @Composable
 @Preview(showBackground = true, backgroundColor = 0x00FFFFFF)
 fun myPreview(){
     FlatInfoScreen(navController = rememberNavController())
+}
+
+@OptIn(ExperimentalGlideComposeApi::class)
+@RequiresApi(Build.VERSION_CODES.O)
+@Composable
+private fun addDealBlock(viewModel: DealViewModel, dateList: List<LocalDate>){
+
+    // Главное содержимое блока
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = ComponentDiffNormal)
+            .animateContentSize()
+    ) {
+
+        // Дата заселения
+        Row(
+            modifier = Modifier
+                .padding(vertical = ComponentDiffSmall)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        )
+        {
+            titleText(text = stringResource(id = R.string.check_in_date) + ": ")
+            mainText(
+                text =
+                if (viewModel.isSelectedDeal)
+                    GetTimeString(viewModel.dateIn)
+                else
+                    dateList.first().toString())
+        }
+
+        // Дата выселения
+        Row(
+            modifier = Modifier
+                .padding(vertical = ComponentDiffSmall)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        )
+        {
+            titleText(text = stringResource(id = R.string.check_out_date) + ": ")
+            mainText(text =
+            if (viewModel.isSelectedDeal)
+                GetTimeString(viewModel.dateOut)
+            else
+                dateList.last().toString())
+        }
+
+        if (!viewModel.isSelectedDeal)
+        {
+            // Стоимость проживания в день
+            VerticalCustomTextField(
+                title = stringResource(id = R.string.pricePerDay),
+                text = viewModel.price,
+                placeholderText = stringResource(id = R.string.pricePerDay),
+                onValueChange = { viewModel.setPrice(it) },
+                fontSize = 14.sp,
+            )
+        } else
+        {
+            // Стоимость проживания в день
+            Row(
+                modifier = Modifier
+                    .padding(vertical = ComponentDiffSmall)
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            )
+            {
+                titleText(text = stringResource(id = R.string.pricePerDay) + ": ")
+                mainText(text = viewModel.price)
+            }
+        }
+
+        if (!viewModel.isSelectedDeal)
+            Row(modifier = Modifier.fillMaxWidth()) {
+            val boxSize = 30.dp
+            val boxSelectedSize = 45.dp
+
+            val yellow = FlatYellow
+            val red = FlatRed
+            val green = FlatGreen
+
+            Box(modifier = Modifier
+                .padding(horizontal = ComponentDiffSmall)
+                .size(if (viewModel.colorIndex == 0) boxSelectedSize else boxSize)
+                .background(color = yellow, shape = CircleShape)
+                .clickable { viewModel.setColorIndex(0) })
+            Box(modifier = Modifier
+                .padding(horizontal = ComponentDiffSmall)
+                .size(if (viewModel.colorIndex == 1) boxSelectedSize else boxSize)
+                .background(color = red, shape = CircleShape)
+                .clickable { viewModel.setColorIndex(1) })
+            Box(modifier = Modifier
+                .padding(horizontal = ComponentDiffSmall)
+                .size(if (viewModel.colorIndex == 2) boxSelectedSize else boxSize)
+                .background(color = green, shape = CircleShape)
+                .clickable { viewModel.setColorIndex(2) })
+//            Box(modifier = Modifier.padding(horizontal = ComponentDiffSmall).size(if (viewModel.colorIndex == 3) boxSelectedSize else boxSize).background(color = blue, shape = CircleShape)  .clickable { viewModel.setColorIndex(3) })
+//            Box(modifier = Modifier.padding(horizontal = ComponentDiffSmall).size(if (viewModel.colorIndex == 4) boxSelectedSize else boxSize).background(color = cyan, shape = CircleShape)  .clickable { viewModel.setColorIndex(4) })
+        }
+        
+        // Текст Заголовок
+        Text(
+            text = stringResource(id = R.string.flatInfoClientInfo),
+            style = TextStyle(
+                color = HeaderMainColorMain,
+                fontSize = LargeFont
+            ),
+        )
+
+        val launcher = rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()){ uri ->
+            Log.d("viewModel", uri.toString())
+            if (uri != null) {
+                viewModel.addLocalImageUri(uri)
+            }
+        }
+
+        
+        // Блок с полями личной информации
+        Row(modifier = Modifier.fillMaxWidth()) {
+            Column(modifier = Modifier
+                .fillMaxWidth(0.4f)
+                .padding(top = ComponentDiffLarge)) {
+
+                // Изображение по умолчаниюы
+                if (viewModel.imageLocalUri == Uri.EMPTY && viewModel.imageLoadUri == Uri.EMPTY)
+                    Image(
+                        modifier = Modifier
+                            .size(150.dp)
+                            .padding(ComponentDiffNormal),
+                        imageVector = ImageVector.vectorResource(id = R.drawable.no_image),
+                        contentDescription = stringResource(id = R.string.imageDescriptionFlatPhoto),
+                        colorFilter = ColorFilter.tint(Color.DarkGray),
+                    )
+                
+                else 
+                    GlideImage(model = if (viewModel.imageLocalUri == Uri.EMPTY) viewModel.imageLoadUri else viewModel.imageLocalUri, contentDescription = "")
+
+                // Вспомогательная панель
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                    // Изображение для Добавления
+                    Image(
+                        imageVector = Icons.Filled.Add,
+                        contentDescription = stringResource(id = R.string.imageDescriptionAdd),
+                        colorFilter = ColorFilter.tint(FlatGreen),
+                        modifier = Modifier
+                            .size(iconSizeNormal)
+                            .clickable { launcher.launch("image/*")/*TODO: Сделать добавление изображения*/ },
+                    )
+                }
+            }
+
+
+            // Поля для заполнения
+            Column(modifier = Modifier.fillMaxWidth()) {
+                // ФИО
+                VerticalCustomTextField(
+                    title = stringResource(id = R.string.fio),
+                    text = viewModel.fio,
+                    placeholderText = stringResource(id = R.string.fio),
+                    onValueChange = { viewModel.setFio(it) },
+                    fontSize = 14.sp,
+                )
+
+                // Телефон
+                VerticalCustomTextField(
+                    title = stringResource(id = R.string.phone),
+                    text = viewModel.phone,
+                    placeholderText = stringResource(id = R.string.phone),
+                    onValueChange = { viewModel.setPhone(it) },
+                    fontSize = 14.sp,
+                )
+
+                // Паспорт
+                VerticalCustomTextField(
+                    title = stringResource(id = R.string.passport),
+                    text = viewModel.passport,
+                    placeholderText = stringResource(id = R.string.passportSN),
+                    onValueChange = { viewModel.setPassport(it) },
+                    fontSize = 14.sp,
+                )
+            }
+        }
+
+        // Прописка
+        VerticalCustomTextField(
+            title = stringResource(id = R.string.registration),
+            text = viewModel.registration,
+            placeholderText = stringResource(id = R.string.registration),
+            onValueChange = { viewModel.setRegistration(it) },
+            fontSize = 14.sp,
+        )
+
+        // Кнопка Добавить
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(ComponentDiffNormal),
+            horizontalArrangement = Arrangement.Center
+        ){
+            ProgressButton(
+                text = if (viewModel.isSelectedDeal) stringResource(id = R.string.edit) else stringResource(id = R.string.add),
+                onClick = { viewModel.btnApplyClick(
+                    Timestamp(SimpleDateFormat("yyyy-MM-dd").parse(dateList.first().toString()).time),
+                    Timestamp(SimpleDateFormat("yyyy-MM-dd").parse(dateList.last().toString()).time)
+                ) },
+                isLoading = viewModel.isClientInfoUpdating || viewModel.isNewDealCreating,
+                btnColor = if (viewModel.isSelectedDeal) FlatYellow else FlatGreen
+            )
+        }
+
+        if (viewModel.priceToast)
+            mToast(LocalContext.current, "Невозможно создать сделку без цены")
+    }
+}
+
+
+@RequiresApi(Build.VERSION_CODES.O)
+fun GetTimeString(l: Long):String{
+    val triggerTime = LocalDateTime.ofInstant(
+        Instant.ofEpochMilli(l),
+        TimeZone.getDefault().toZoneId()
+    )
+
+    return triggerTime.toString()
 }

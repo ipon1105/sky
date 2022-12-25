@@ -24,7 +24,7 @@ fun isUserAuth() : Boolean {
 }
 
 // Создаём список сделоак и возвращает ссылку на него
-suspend fun createDealList(dealList: DealList) : String{
+suspend fun createDealList(dealList: DetailList) : String{
     var res = ""
 
     try {
@@ -107,6 +107,7 @@ suspend fun loadDeal(dealId: String) : Deal {
                     Log.d(TAG, "${it.result}")
                     deal = it.result.toObject(DealGot::class.java)!!
                 }
+                Log.d("loadDealList", "loadDealList Load deal : ")
             }.addOnSuccessListener {
                 Log.i(TAG, "loadDealList is successful")
             }.addOnFailureListener{
@@ -122,8 +123,8 @@ suspend fun loadDeal(dealId: String) : Deal {
 }
 
 // Сохраняет изображение о клиенте
-suspend fun createClientImage(uri: Uri, name: String, flatId: String) : String{
-    val res = "clients/${flatId}/$name"
+suspend fun createClientImage(uri: Uri, name: String, clientId: String) : String{
+    val res = "clients/${clientId}/$name"
 
     try {
         Firebase
@@ -213,16 +214,58 @@ suspend fun deleteImage(path: String){
 
 }
 
-// Функция для загрузки списка сделок
-suspend fun loadDetail(detailId: String) : DealList {
-    var detail = DealList()
+suspend fun createDetail() : String {
+    var res = ""
 
     try {
-        Firebase.firestore.collection("DealList").document(detailId).get()
+        Firebase.firestore.collection("DetailList").add(DetailList())
+            .addOnCompleteListener(){ task ->
+                Log.i(TAG, "loadDetail is complete")
+                if (task.isSuccessful)
+                    res = task.result.id
+            }.addOnSuccessListener {
+                Log.i(TAG, "loadDetail successful")
+            }.addOnFailureListener{
+                Log.e(TAG, "loadDetail fail")
+            }.addOnCanceledListener {
+                Log.e(TAG, "loadDetail cancel")
+            }.await()
+    } catch (e: FirebaseFirestoreException){
+        Log.e(TAG, "loadDetail: $e")
+    }
+
+    return res
+}
+
+// Функция для загрузки списка сделок
+suspend fun saveDetail(detailId: String, detail: DetailList) {
+    try {
+        Firebase.firestore.collection("DetailList").document(detailId).set(detail)
+            .addOnCompleteListener(){ task ->
+                Log.i(TAG, "loadDetail is complete")
+                Log.i(TAG, "loadDetail: $detail")
+            }.addOnSuccessListener {
+                Log.i(TAG, "loadDetail successful")
+            }.addOnFailureListener{
+                Log.e(TAG, "loadDetail fail")
+            }.addOnCanceledListener {
+                Log.e(TAG, "loadDetail cancel")
+            }.await()
+    } catch (e: FirebaseFirestoreException){
+        Log.e(TAG, "loadDetail: $e")
+    }
+}
+
+// Функция для загрузки списка сделок
+suspend fun loadDetail(detailId: String) : DetailList {
+    var detail = DetailList()
+
+    try {
+        Firebase.firestore.collection("DetailList").document(detailId).get()
             .addOnCompleteListener(){ task ->
                 Log.i(TAG, "loadDetail is complete")
 
-                val document = task.result.toObject(DealList::class.java)
+                val document = task.result.toObject(DetailList::class.java)
                 if (document != null)
                     detail = document
 
@@ -243,6 +286,9 @@ suspend fun loadDetail(detailId: String) : DealList {
 
 // Функция для загрузки клиента из базы по id
 suspend fun loadClient(clientId: String) : Client{
+    if (clientId.equals(""))
+        return Client()
+
     var client = Client()
 
     try {
@@ -271,7 +317,9 @@ suspend fun loadClient(clientId: String) : Client{
 
 // Получить ссылку на скичавание изобажения
 suspend fun getUriLink(name: String): Uri {
-    var res = Uri.parse("none")
+    if (name.equals(""))
+        return Uri.EMPTY
+    var res = Uri.EMPTY
 
     try {
         Firebase.storage.reference.child(name).downloadUrl
@@ -297,6 +345,33 @@ suspend fun getUriLink(name: String): Uri {
 // Обновить данные о квартире и возвращает ссылку на файл
 suspend fun updateFlatImage(uri: Uri, name: String, flatId: String) : String{
     val res = "${getUserId()}/flats/$flatId/$name"
+
+    try {
+        Firebase
+            .storage
+            .reference
+            .child(res)
+            .putFile(uri)
+            .addOnCompleteListener(){
+                Log.i(TAG, "updateFlatImage is complete")
+                Log.i(TAG, "updateFlatImage save to $res")
+            }.addOnSuccessListener {
+                Log.i(TAG, "updateFlatImage is successful")
+            }.addOnFailureListener{
+                Log.e(TAG, "updateFlatImage is fail")
+            }.addOnCanceledListener {
+                Log.e(TAG, "updateFlatImage is cancel")
+            }.await()
+    } catch (e: FirebaseFirestoreException){
+        Log.e(TAG, "updateFlatImage: $e")
+    }
+
+    return res
+}
+
+// Обновить данные о квартире и возвращает ссылку на файл
+suspend fun updateClientImage(uri: Uri, name: String) : String{
+    val res = "${getUserId()}/Clients/$name"
 
     try {
         Firebase

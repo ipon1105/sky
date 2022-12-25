@@ -27,16 +27,21 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.sky.android.R
 import com.example.sky.android.models.WorkerModel
 import com.example.sky.android.composables.RatingBar
+import com.example.sky.android.models.authorization.LoginViewModel
+import com.example.sky.android.models.data.SettingViewModel
 import com.example.sky.navigation.NavRoute
 import com.example.sky.ui.theme.*
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun SettingScreen(navController: NavHostController){
+    val viewModel = viewModel<SettingViewModel>()
+
     Scaffold(
         modifier = Modifier
             .fillMaxSize(),
@@ -89,7 +94,8 @@ fun SettingScreen(navController: NavHostController){
                 Spacer(modifier = Modifier.padding(top = CardPaddingNormal))
 
                 // Настройки работников
-                WorkerSettingsCard(navController)
+                if (viewModel.status == 2)
+                    WorkerSettingsCard(navController, viewModel)
 
                 // Пробел
                 Spacer(modifier = Modifier.padding(bottom = CardBottomPaddingNormal))
@@ -243,7 +249,7 @@ fun GeneralSettingsCard(){
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun WorkerSettingsCard(navController: NavHostController){
+fun WorkerSettingsCard(navController: NavHostController, viewModel: SettingViewModel){
     val maxLazyHeight = 300.dp
     val cardElevation = 5.dp
     var isFreeShow by remember{mutableStateOf(true)}
@@ -422,7 +428,7 @@ fun WorkerCard(navController: NavHostController, worker: WorkerModel){
 
             // Правая часть содержимого
             Row(Modifier.fillMaxSize()){
-                // ФИО и Средняя оценка
+                // ФИО
                 Column(
                     modifier = Modifier
                         .padding(start = ComponentDiffSmall, top = ComponentDiffSmall)
@@ -437,9 +443,14 @@ fun WorkerCard(navController: NavHostController, worker: WorkerModel){
                         maxLines = 1,
                     )
 
-                    // TODO: Разобраться с рейтингом работника
-                    // Оценка
-                    RatingBar(modifier = Modifier.padding(vertical = ComponentDiffSmall), rating = 2.0f, color = RatingBarYellow)
+                    // Телефон
+                    Text(
+                        text = "Телефон ${worker.description}",
+                        color = GrayTextColor,
+                        fontWeight = FontWeight.Bold,
+                        overflow = TextOverflow.Ellipsis,
+                        maxLines = 1,
+                    )
                 }
 
                 // TODO: Сделать удаление работника из списка работников
