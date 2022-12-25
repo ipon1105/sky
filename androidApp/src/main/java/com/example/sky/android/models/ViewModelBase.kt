@@ -2,9 +2,7 @@ package com.example.sky.android.models
 
 import android.net.Uri
 import android.util.Log
-import com.example.sky.android.models.data.Admin
-import com.example.sky.android.models.data.Flat
-import com.example.sky.android.models.data.UserData
+import com.example.sky.android.models.data.*
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.ktx.firestore
@@ -25,6 +23,176 @@ fun isUserAuth() : Boolean {
     return  if (getUserId().equals("")) false else true
 }
 
+// Создаём список сделоак и возвращает ссылку на него
+suspend fun createDealList(dealList: DealList) : String{
+    var res = ""
+
+    try {
+        Firebase.firestore
+            .collection("DealList").add(dealList)
+            .addOnCompleteListener(){
+                Log.i(TAG, "createDealList is complete")
+                if (it.isSuccessful)
+                    res = it.result.id
+                Log.i(TAG, "createDealList res = $res")
+            }.addOnSuccessListener {
+                Log.i(TAG, "createDealList is successful")
+            }.addOnFailureListener{
+                Log.e(TAG, "createDealList is fail")
+            }.addOnCanceledListener {
+                Log.e(TAG, "createDealList is cancel")
+            }.await()
+    } catch (e: FirebaseFirestoreException){
+        Log.e(TAG, "createDealList: $e")
+    }
+
+    return res
+}
+
+// Сохраняет Список сделок
+suspend fun saveDealList(dealId: String, dealList: List<String>){
+    try {
+        Firebase.firestore
+            .collection("DealList").document(dealId).update("dealList", dealList)
+            .addOnCompleteListener(){
+                Log.i(TAG, "saveDealList is complete")
+            }.addOnSuccessListener {
+                Log.i(TAG, "saveDealList is successful")
+            }.addOnFailureListener{
+                Log.e(TAG, "saveDealList is fail")
+            }.addOnCanceledListener {
+                Log.e(TAG, "saveDealList is cancel")
+            }.await()
+    } catch (e: FirebaseFirestoreException){
+        Log.e(TAG, "saveDealList: $e")
+    }
+}
+
+// Сохраняет Сделку в базе и возвращает ссылку на неё
+suspend fun createDealToFirebase(deal: Deal) : String{
+    var res = ""
+
+    try {
+        Firebase.firestore
+            .collection("Deal").add(deal)
+            .addOnCompleteListener(){
+                Log.i(TAG, "createDealToFirebase is complete")
+                if (it.isSuccessful) {
+                    res = it.result.id
+                }
+            }.addOnSuccessListener {
+                Log.i(TAG, "createDealToFirebase is successful")
+            }.addOnFailureListener{
+                Log.e(TAG, "createDealToFirebase is fail")
+            }.addOnCanceledListener {
+                Log.e(TAG, "createDealToFirebase is cancel")
+            }.await()
+    } catch (e: FirebaseFirestoreException){
+        Log.e(TAG, "createDealToFirebase: $e")
+    }
+
+    return res
+}
+
+// Сохраняет изображение о клиенте
+suspend fun loadDeal(dealId: String) : Deal {
+    var deal = DealGot()
+
+    try {
+        Firebase.firestore
+            .collection("Deal").document(dealId).get()
+            .addOnCompleteListener(){
+                Log.i(TAG, "loadDealList is complete")
+                if (it.isSuccessful) {
+                    Log.d(TAG, "${it.result}")
+                    deal = it.result.toObject(DealGot::class.java)!!
+                }
+            }.addOnSuccessListener {
+                Log.i(TAG, "loadDealList is successful")
+            }.addOnFailureListener{
+                Log.e(TAG, "loadDealList is fail")
+            }.addOnCanceledListener {
+                Log.e(TAG, "loadDealList is cancel")
+            }.await()
+    } catch (e: FirebaseFirestoreException){
+        Log.e(TAG, "loadDealList: $e")
+    }
+
+    return DealGot_to_Deal(deal)
+}
+
+// Сохраняет изображение о клиенте
+suspend fun createClientImage(uri: Uri, name: String, flatId: String) : String{
+    val res = "clients/${flatId}/$name"
+
+    try {
+        Firebase
+            .storage
+            .reference
+            .child(res)
+            .putFile(uri)
+            .addOnCompleteListener(){
+                Log.i(TAG, "updateFlatImage is complete")
+                Log.i(TAG, "updateFlatImage save to $res")
+            }.addOnSuccessListener {
+                Log.i(TAG, "updateFlatImage is successful")
+            }.addOnFailureListener{
+                Log.e(TAG, "updateFlatImage is fail")
+            }.addOnCanceledListener {
+                Log.e(TAG, "updateFlatImage is cancel")
+            }.await()
+    } catch (e: FirebaseFirestoreException){
+        Log.e(TAG, "updateFlatImage: $e")
+    }
+
+    return res
+}
+
+// Функция сохраняет клиента
+suspend fun saveClient(clientId: String, client: Client) {
+    try {
+        Firebase.firestore
+            .collection("Client").document(clientId).set(client)
+            .addOnCompleteListener(){
+                Log.i(TAG, "saveClient is complete")
+            }.addOnSuccessListener {
+                Log.i(TAG, "saveClient is successful")
+            }.addOnFailureListener{
+                Log.e(TAG, "saveClient is fail")
+            }.addOnCanceledListener {
+                Log.e(TAG, "saveClient is cancel")
+            }.await()
+    } catch (e: FirebaseFirestoreException){
+        Log.e(TAG, "saveClient: $e")
+    }
+}
+
+// Добавления клиента в базу и возврат ссылки на него
+suspend fun createClient(client: Client):String{
+    var res = ""
+
+    try {
+        Firebase.firestore
+            .collection("Client").add(client)
+            .addOnCompleteListener(){
+                Log.i(TAG, "createClient update is complete")
+                if (it.isSuccessful)
+                    res = it.result.id
+                Log.i(TAG, "createClient client: $res")
+            }.addOnSuccessListener {
+                Log.i(TAG, "createClient update is successful")
+            }.addOnFailureListener{
+                Log.e(TAG, "createClient update is fail")
+            }.addOnCanceledListener {
+                Log.e(TAG, "createClient update is cancel")
+            }.await()
+    } catch (e: FirebaseFirestoreException){
+        Log.e(TAG, "createClient: $e")
+    }
+
+    return res
+}
+
 // Удалить изображение из базы
 suspend fun deleteImage(path: String){
 
@@ -43,6 +211,62 @@ suspend fun deleteImage(path: String){
         Log.e(TAG, "deleteImage is cancel")
     }
 
+}
+
+// Функция для загрузки списка сделок
+suspend fun loadDetail(detailId: String) : DealList {
+    var detail = DealList()
+
+    try {
+        Firebase.firestore.collection("DealList").document(detailId).get()
+            .addOnCompleteListener(){ task ->
+                Log.i(TAG, "loadDetail is complete")
+
+                val document = task.result.toObject(DealList::class.java)
+                if (document != null)
+                    detail = document
+
+                Log.i(TAG, "loadDetail: $detail")
+            }.addOnSuccessListener {
+                Log.i(TAG, "loadDetail successful")
+            }.addOnFailureListener{
+                Log.e(TAG, "loadDetail fail")
+            }.addOnCanceledListener {
+                Log.e(TAG, "loadDetail cancel")
+            }.await()
+    } catch (e: FirebaseFirestoreException){
+        Log.e(TAG, "loadDetail: $e")
+    }
+
+    return detail
+}
+
+// Функция для загрузки клиента из базы по id
+suspend fun loadClient(clientId: String) : Client{
+    var client = Client()
+
+    try {
+        Firebase.firestore.collection("Client").document(clientId).get()
+            .addOnCompleteListener(){ task ->
+                Log.i(TAG, "loadClient is complete")
+
+                val document = task.result.toObject(Client::class.java)
+                if (document != null)
+                    client = document
+
+                Log.i(TAG, "loadClient client: $client")
+            }.addOnSuccessListener {
+                Log.i(TAG, "loadClient is successful")
+            }.addOnFailureListener{
+                Log.e(TAG, "loadClient is fail")
+            }.addOnCanceledListener {
+                Log.e(TAG, "loadClient is cancel")
+            }.await()
+    } catch (e: FirebaseFirestoreException){
+        Log.e(TAG, "loadClient: $e")
+    }
+
+    return client
 }
 
 // Получить ссылку на скичавание изобажения
@@ -150,6 +374,7 @@ suspend fun getFlatFromFirestore(flatId: String) : Flat {
                 if (document != null)
                     flat = document
 
+                Log.i(TAG, "getFlatFromFirestore flat = ${flat}")
             }
             .addOnSuccessListener {
                 Log.i(TAG, "getFlatFromFirestore load is successful")
@@ -240,6 +465,34 @@ suspend fun deleteFlatFromFirestore(flatId: String) : String{
     return res
 }
 
+// Получаем запись Работника из базы данных
+suspend fun getWorkerFromFirestore() : Worker{
+    var worker = Worker()
+
+    try {
+        Firebase.firestore.collection("Worker").document(getUserId()).get()
+            .addOnCompleteListener(){ task ->
+                Log.i(TAG, "getWorkerFromFirestore is complete")
+
+                val document = task.result.toObject(Worker::class.java)
+                if (document != null)
+                    worker = document
+
+                Log.i(TAG, "getWorkerFromFirestore worker: $worker")
+            }.addOnSuccessListener {
+                Log.i(TAG, "getWorkerFromFirestore is successful")
+            }.addOnFailureListener{
+                Log.e(TAG, "getWorkerFromFirestore is fail")
+            }.addOnCanceledListener {
+                Log.e(TAG, "getWorkerFromFirestore is cancel")
+            }.await()
+    } catch (e: FirebaseFirestoreException){
+        Log.e(TAG, "getWorkerFromFirestore: $e")
+    }
+
+    return worker
+}
+
 // Получаем запись администратора из базы данных
 suspend fun getAdminFromFirestore() : Admin{
     var admin = Admin()
@@ -252,7 +505,6 @@ suspend fun getAdminFromFirestore() : Admin{
                 val document = task.result.toObject(Admin::class.java)
                 if (document != null)
                     admin = document
-
 
                 Log.i(TAG, "getAdminFromFirestore admin: $admin")
             }.addOnSuccessListener {
@@ -434,4 +686,80 @@ suspend fun createUserData(data: UserData) : String {
     }
 
     return res
+}
+
+// Возвращает информацию о статусе
+suspend fun getStatus(userId: String) : Int{
+    var status = 0
+
+    try{
+        Firebase.firestore.collection("Status").document(userId).get()
+            .addOnCompleteListener(){
+                Log.i(TAG, "getStatus is complete")
+
+                if (it.isSuccessful)
+                    status = it.result.toObject(Status::class.java)?.status ?: 0
+
+                Log.i(TAG, "getStatus is ${it.result} complete")
+            }.addOnSuccessListener {
+                Log.i(TAG, "getStatus is successful")
+            }.addOnFailureListener{
+                Log.e(TAG, "getStatus is fail: ${it.message}")
+            }.addOnCanceledListener {
+                Log.e(TAG, "getStatus is cancel")
+            }.await()
+    } catch (e: FirebaseFirestoreException){
+        Log.e(TAG, "getStatus: $e")
+    }
+
+    return status
+}
+
+// Создаёт информацию о статусе
+suspend fun createStatus(userId: String, status: Status){
+    try{
+        Firebase.firestore.collection("Status").document(userId).set(status)
+            .addOnCompleteListener(){
+                Log.i(TAG, "createStatus is complete")
+
+
+                Log.i(TAG, "createStatus is ${it.result} complete")
+            }.addOnSuccessListener {
+                Log.i(TAG, "createStatus is successful")
+            }.addOnFailureListener{
+                Log.e(TAG, "createStatus is fail: ${it.message}")
+            }.addOnCanceledListener {
+                Log.e(TAG, "createStatus is cancel")
+            }.await()
+    } catch (e: FirebaseFirestoreException){
+        Log.e(TAG, "createStatus: $e")
+    }
+}
+
+// Возвращает подробную информацию о человеке
+// Возвращает информацию о статусе
+suspend fun getUserData(userDataId: String) : UserData{
+    var status = UserData()
+
+    try{
+        Firebase.firestore.collection("UserData").document(userDataId).get()
+            .addOnCompleteListener(){
+                Log.i(TAG, "getUserData is complete")
+
+                if (it.isSuccessful)
+                    status = it.result.toObject(UserData::class.java)!!
+
+                Log.i(TAG, "getUserData is ${status} complete")
+            }.addOnSuccessListener {
+                Log.i(TAG, "getUserData is successful")
+            }.addOnFailureListener{
+                Log.e(TAG, "getUserData is fail: ${it.message}")
+            }.addOnCanceledListener {
+                Log.e(TAG, "getUserData is cancel")
+            }.await()
+    } catch (e: FirebaseFirestoreException){
+        Log.e(TAG, "getUserData: $e")
+    }
+
+    return status
 }
