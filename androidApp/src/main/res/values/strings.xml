@@ -26,6 +26,7 @@
     <string name="map">Map</string>
     <string name="account">Account</string>
     <string name="login">Login</string>
+    <string name="map_not_sup">This version of the app does not support the map</string>
     <string name="name">Name</string>
     <string name="surname">Surname</string>
     <string name="patronymic">Patronymic</string>
@@ -45,6 +46,7 @@
     <string name="termsAndConditions">Terms &amp; Conditions</string>
     <string name="cancel">Cancel</string>
     <string name="apply">Apply</string>
+    <string name="add">Add</string>
     <string name="lightTheme">Light Theme</string>
     <string name="darkTheme">Dark Theme</string>
     <string name="setting">Setting</string>
@@ -96,6 +98,14 @@
     <!-- Terms & Conditions -->
     <string name="termsAndConditionText">Terms &amp; Conditions Text.</string>
 
+    <string name="check_in_date">Check in date</string>
+    <string name="check_out_date">Check out date</string>
+    <string name="pricePerDay">Price per day</string>
+    <string name="fio">FIO</string>
+    <string name="passport">Passport</string>
+    <string name="registration">Registration</string>
+    <string name="passportSN">Series and number</string>
+
     <!-- Terms & Conditions -->
     <string name="address">Address</string>
     <string name="addressError">Address is too high</string>
@@ -109,6 +119,7 @@
 
     <!-- FlatInfoScreen -->
     <string name="flatInfoMoreDetails">Apartment\'s Info</string>
+    <string name="flatInfoClientInfo">Client\'s Info</string>
 
     <!-- ListScreen -->
     <string name="free">Free</string>

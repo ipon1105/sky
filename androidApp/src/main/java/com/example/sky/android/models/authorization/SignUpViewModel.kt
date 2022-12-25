@@ -8,8 +8,10 @@ import androidx.navigation.NavHostController
 import com.example.sky.android.composables.*
 import com.example.sky.android.models.*
 import com.example.sky.android.models.data.Admin
+import com.example.sky.android.models.data.Status
 import com.example.sky.android.models.data.UserData
 import com.example.sky.android.screens.consistDigits
+import com.example.sky.android.screens.refreshModel
 import com.example.sky.navigation.NavRoute
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -186,23 +188,27 @@ class SignUpViewModel: ViewModel() {
                 val userId = registrationNewUser(email, password)
                 val userData = createUserData(data)
                 if (status == 2) {
-                        createAdmin(
-                            userId = userId,
-                            admin = Admin(
-                                auth = userId,
-                                info = userData
-                            )
+                    createAdmin(
+                        userId = userId,
+                        admin = Admin(
+                            auth = userId,
+                            info = userData
                         )
-                    } else {
-                        createWorker(
-                            userId = userId,
-                            worker = Worker(
-                                auth = userId,
-                                info = userData
-                            )
+                    )
+                    createStatus(userId, Status(status))
+                } else {
+                    createWorker(
+                        userId = userId,
+                        worker = Worker(
+                            auth = userId,
+                            info = userData
                         )
-                    }
+                    )
+                    createStatus(userId, Status(status))
+                }
                 isAuthLoading = false
+
+                refreshModel()
                 navController.navigate(NavRoute.Main.route)
 
             // Неудачная регистрация нового пользователя

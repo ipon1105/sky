@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import com.example.sky.android.models.signIn
+import com.example.sky.android.screens.refreshModel
 import com.example.sky.navigation.NavRoute
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -96,6 +97,7 @@ class LoginViewModel: ViewModel() {
                 if (signIn(email, password))
                 {
                     isAuthLoading = false
+                    refreshModel()
                     navController.navigate(NavRoute.Main.route)
                 }
 
