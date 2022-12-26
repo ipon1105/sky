@@ -461,6 +461,7 @@ fun FlatInfoScreen(navController: NavHostController, flatId: String = ""){
                                 Text( text = stringResource(id = R.string.alertNo), color = Color.White, modifier = Modifier.padding(all = TextTopSmall))
                             }
                         }
+
                     }
                 )
         }
