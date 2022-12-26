@@ -1,6 +1,5 @@
 package com.example.sky.android.screens
 
-import androidx.annotation.StringRes
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -13,10 +12,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.navigation.NavHostController
 import com.example.sky.android.R
+import com.example.sky.android.composables.ui.BodyText
+import com.example.sky.android.composables.ui.HeaderText
 import com.example.sky.ui.theme.*
 
 // Класс для перечисления элементов пользовательского соглашения
@@ -75,40 +74,5 @@ fun TermsAndConditionsScreen(navController: NavHostController) {
                 BodyText(id = item.Bid)
             }
         })
-
     }
-}
-
-@Composable
-private fun HeaderText(@StringRes id: Int){
-    HeaderText(stringResource(id = id))
-}
-
-@Composable
-private fun BodyText(@StringRes id: Int){
-    BodyText(stringResource(id = id))
-}
-
-@Composable
-private fun HeaderText(text: String){
-    Text(
-        text = "\t" + text,
-        color = DarkGray,
-        fontSize = NormalFont,
-        fontWeight = FontWeight.Bold,
-        modifier = Modifier.padding(top = ComponentDiffNormal)
-    )
-}
-
-@Composable
-private fun BodyText(text: String){
-    for (str in text.split('\n'))
-        Text(
-            text = str,
-            color = DarkGray,
-            fontSize = SmallFont,
-            modifier = Modifier.padding(top = ComponentDiffNormal),
-            textAlign = TextAlign.Justify,
-        )
-
 }
