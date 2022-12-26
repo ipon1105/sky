@@ -26,8 +26,6 @@ class LoginViewModel: ViewModel() {
         private set
     var isAuthLoading by mutableStateOf(false)
         private set
-    var isLinkForgotPassword by mutableStateOf(false)
-        private set
     var isLinkRegister by mutableStateOf(false)
         private set
     var showDialog by mutableStateOf(false)
@@ -70,19 +68,6 @@ class LoginViewModel: ViewModel() {
             }
         } else
             navController.navigate(route = NavRoute.SignUp.route)
-    }
-
-    // Перейти на страницу Забыл пароль
-    fun goLinkToForgotPassword(navController: NavHostController){
-        if (isAuthLoading) {
-            isLinkForgotPassword = true
-
-            viewModelScope.launch(Dispatchers.Main) {
-                delay(10.seconds)
-                isLinkForgotPassword = false
-            }
-        } else
-            navController.navigate(route = NavRoute.ForgotPassword.route)
     }
 
     // Функция входа на главные экраны
