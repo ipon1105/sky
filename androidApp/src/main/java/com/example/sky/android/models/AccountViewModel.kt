@@ -8,11 +8,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import com.example.sky.android.models.data.UserData
+import com.example.sky.android.models.data.getUserDataLoading
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class AccountViewModel:ViewModel() {
-    var userData by mutableStateOf(UserData())
+    var userData by mutableStateOf(getUserDataLoading())
         private set
     var expanded by mutableStateOf(false)
         private set

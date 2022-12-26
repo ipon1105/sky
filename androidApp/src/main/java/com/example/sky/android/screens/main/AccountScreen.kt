@@ -140,7 +140,6 @@ fun AccountCard(data: UserData){
                     )
                     // Изображение из сети
                 }else {
-                    // TODO: Сделать загрузку из сети
                     GlideImage(
                         modifier = Modifier
                             .size(photoSize)
@@ -162,30 +161,16 @@ fun AccountCard(data: UserData){
                                 .weight(9f)
                                 .padding(top = ComponentDiffSmall),
                         )
-
-                        //Статус
-//                        Box(
-//                            modifier = Modifier
-//                                .size(status)
-//                                .background(
-//                                    shape = RoundedCornerShape(bottomStart = shortShape),
-//                                    color = DarkGray
-//                                )
-//                                .weight(2f)
-//                                .clickable { viewModel.editAccount(navController) }
-//                        ){
-//                            Icon(modifier = Modifier.fillMaxSize().padding(ComponentDiffSmall),imageVector = Icons.Filled.Edit, contentDescription = "", tint = Color.White)
-//                        }
                     }
 
-
+                    // Имя Отчество
                     Row() {
-                        MainText(text = data.name, fontSize = 18.sp)
+                        MainText(text = data.name, fontSize = NormalFont)
                         Spacer(modifier = Modifier.width(5.dp))
-                        MainText(text = data.patronymic, fontSize = 18.sp)
+                        MainText(text = data.patronymic, fontSize = NormalFont)
                     }
 
-                    Text(modifier = Modifier.padding(top = ComponentDiffNormal),text = if (data.status == 2) "Администратор" else "Работник", fontSize =  28.sp, color = mainColor)
+                    Text(modifier = Modifier.padding(top = ComponentDiffNormal),text = if (data.status == 2) "Администратор" else if (data.status == 1) "Работник" else "Загружается", fontSize =  28.sp, color = mainColor)
                 }
             }
 
