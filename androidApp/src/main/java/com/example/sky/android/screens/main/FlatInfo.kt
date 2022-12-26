@@ -32,12 +32,10 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import coil.annotation.ExperimentalCoilApi
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
@@ -68,8 +66,8 @@ fun MoreDetailBlock(viewModel: FlatInfoViewModel){
 
     // Из одной квартиры выносит список квартир, которые собирается отображать (в виде ссылок для скачивания)
     var imageList: List<Uri?> = viewModel.downloadImageList
-    if (imageList.size == 0)
-        imageList += null
+    if (imageList.isEmpty())
+        imageList = imageList.plus(null)
 
     val pagerState = rememberPagerState(initialPage = 0)
     val maxHorizontalPagerHeight = 200.dp
@@ -136,11 +134,13 @@ fun MoreDetailBlock(viewModel: FlatInfoViewModel){
             Row(modifier = Modifier.fillMaxWidth()) {
                 // Текст
                 ClickableText(
+                    modifier = Modifier
+                        .align(Alignment.CenterVertically),
                     text = AnnotatedString(text = stringResource(id = R.string.flatInfoMoreDetails)) ,
                     onClick = { viewModel.setShowInfoBlock(!viewModel.showInfoBlock) },
                     style = TextStyle(
                         color = HeaderMainColorMain,
-                        fontSize = LargeFont
+                        fontSize = NormalLargeFont
                     ),
                 )
 
@@ -154,7 +154,8 @@ fun MoreDetailBlock(viewModel: FlatInfoViewModel){
                         }
                         .size(dropDownImageSize)
                         .align(Alignment.CenterVertically)
-                        .clickable { viewModel.setShowInfoBlock(!viewModel.showInfoBlock) },
+                        .clickable { viewModel.setShowInfoBlock(!viewModel.showInfoBlock) }
+                        .weight(1f),
                     colorFilter = ColorFilter.tint(color = ImageDropDownColorGray),
                 )
             }
@@ -299,7 +300,7 @@ fun CalendarBlock(viewModel: FlatInfoViewModel){
                         if (dayState.isCurrentDay){
                             Text(text = "now", modifier = Modifier.align(Alignment.Center))
                         } else
-                            Text(text = "${dayState.date.dayOfMonth.toString()}", modifier = Modifier.align(Alignment.Center))
+                            Text(text = dayState.date.dayOfMonth.toString(), modifier = Modifier.align(Alignment.Center))
                     }
                 }
 
@@ -307,7 +308,7 @@ fun CalendarBlock(viewModel: FlatInfoViewModel){
         )
 
         if (calendarState.selectionState.selection.isNotEmpty())
-            addDealBlock(viewModel = specViewModel, dateList = calendarState.selectionState.selection)
+            AddDealBlock(viewModel = specViewModel, dateList = calendarState.selectionState.selection)
 
     }
 }
@@ -468,17 +469,10 @@ fun FlatInfoScreen(navController: NavHostController, flatId: String = ""){
     )
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
-@Composable
-@Preview(showBackground = true, backgroundColor = 0x00FFFFFF)
-fun myPreview(){
-    FlatInfoScreen(navController = rememberNavController())
-}
-
 @OptIn(ExperimentalGlideComposeApi::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-private fun addDealBlock(viewModel: DealViewModel, dateList: List<LocalDate>){
+private fun AddDealBlock(viewModel: DealViewModel, dateList: List<LocalDate>){
 
     // Главное содержимое блока
     Column(
