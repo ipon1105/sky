@@ -1,142 +1,131 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- ENG -->
     <!-- imageDescriptions -->
-    <string name="iconDescription">App\'s Icon</string>
-    <string name="imageDescriptionEmail">Email icon</string>
-    <string name="imageDescriptionPhone">Phone icon</string>
-    <string name="imageDescriptionBack">Back icon</string>
-    <string name="imageDescriptionPassword">Password icon</string>
-    <string name="imageDescriptionHideShowPassword">Password Hide icon</string>
-    <string name="imageDescriptionMyPhoto">My Photo</string>
-    <string name="imageDescriptionFlatPhoto">Flat Photo</string>
-    <string name="imageDescriptionMap">Map Icon</string>
-    <string name="imageDescriptionList">List Icon</string>
-    <string name="imageDescriptionAccount">Account Icon</string>
-    <string name="imageDescriptionEdit">Edit Icon</string>
-    <string name="imageDescriptionDelete">Delete Icon</string>
-    <string name="imageDescriptionAdd">Add Icon</string>
-    <string name="imageDescriptionArrowDropDown">Arrow Drop Down Icon</string>
-    <string name="imageDescriptionSetting">Arrow Drop Down Icon</string>
-    <string name="imageDescriptionClose">Close Icon</string>
+    <string name="iconDescription">Изображение приложения</string>
+    <string name="imageDescriptionEmail">Изображение почты</string>
+    <string name="imageDescriptionPhone">Изображение телефона</string>
+    <string name="imageDescriptionBack">Изображение кнопки назад</string>
+    <string name="imageDescriptionPassword">Изображение пароля</string>
+    <string name="imageDescriptionHideShowPassword">Изображение спарятать пароль</string>
+    <string name="imageDescriptionMyPhoto">Изображение собственного фото</string>
+    <string name="imageDescriptionFlatPhoto">Изображение квартиры</string>
+    <string name="imageDescriptionMap">Изображение карты</string>
+    <string name="imageDescriptionList">Изображение списка</string>
+    <string name="imageDescriptionAccount">Изображение аккаунта</string>
+    <string name="imageDescriptionEdit">Изображение редактирования</string>
+    <string name="imageDescriptionDelete">Изображение удаления</string>
+    <string name="imageDescriptionAdd">Изображение добавления</string>
+    <string name="imageDescriptionArrowDropDown">Изображение выпадающего меню</string>
+    <string name="imageDescriptionSetting">Изображение настроек</string>
+    <string name="imageDescriptionClose">Изображение закрыть</string>
 
     <!-- General -->
-    <string name="phone">Phone</string>
-    <string name="list">List</string>
-    <string name="map">Map</string>
-    <string name="account">Account</string>
-    <string name="login">Login</string>
-    <string name="map_not_sup">This version of the app does not support the map</string>
-    <string name="name">Name</string>
-    <string name="surname">Surname</string>
-    <string name="patronymic">Patronymic</string>
-    <string name="email">Email</string>
-    <string name="password">Password</string>
-    <string name="emailError">Incorrectly email</string>
-    <string name="passwordError">Incorrectly password</string>
-    <string name="phoneError">Incorrectly phone</string>
-    <string name="forgotPassword">Forgot Password?</string>
-    <string name="error">Error</string>
-    <string name="warning">Warning</string>
-    <string name="nickname">Nickname</string>
-    <string name="phoneNumber">Phone number</string>
+    <string name="phone">Телефон</string>
+    <string name="list">Список</string>
+    <string name="map">Карта</string>
+    <string name="account">Аккаунт</string>
+    <string name="login">Войти</string>
+    <string name="map_not_sup">Данная версия приложения не подерживает карту</string>
+    <string name="name">Имя</string>
+    <string name="surname">Фамилия</string>
+    <string name="patronymic">Отчество</string>
+    <string name="email">Почта</string>
+    <string name="password">Пароль</string>
+    <string name="emailError">Некорректная почта</string>
+    <string name="passwordError">Некорректный пароль</string>
+    <string name="phoneError">Некорректный телефон</string>
+    <string name="error">Ошибка</string>
+    <string name="warning">Предупреждение</string>
+    <string name="phoneNumber">Номер телефон</string>
     <string name="id">ID</string>
-    <string name="search">Search</string>
-    <string name="privacyPolicy">Privacy Policy</string>
-    <string name="termsAndConditions">Terms &amp; Conditions</string>
-    <string name="cancel">Cancel</string>
-    <string name="apply">Apply</string>
-    <string name="add">Add</string>
-    <string name="lightTheme">Light Theme</string>
-    <string name="darkTheme">Dark Theme</string>
-    <string name="setting">Setting</string>
-    <string name="logout">Logout</string>
-    <string name="workerSelect">I am Worker</string>
-    <string name="administratorSelect">I am Administrator</string>
-    <string name="valuesEmpty">Values cannot be empty</string>
-    <string name="noConnection">No internet connection</string>
-    <string name="edit">Edit</string>
-    <string name="delete">Delete</string>
-    <string name="deletingError">It is not possible to do the action while the deletion process is in progress</string>
-    <string name="deletingWarning">Are you sure you want to delete the apartment? All data will be lost</string>
-
-    <!-- ForgotPassword -->
-    <string name="forgotPasswordMsg">Don\'t worry! It happens. Please enter the address associated with your account.</string>
-    <string name="forgotPasswordSubmit">Submit</string>
+    <string name="search">Поиск</string>
+    <string name="privacyPolicy">Политика конфиденциальности</string>
+    <string name="termsAndConditions">Пользовательское соглашение</string>
+    <string name="cancel">Отменить</string>
+    <string name="apply">Принять</string>
+    <string name="add">Добавить</string>
+    <string name="lightTheme">Светлая тема</string>
+    <string name="darkTheme">Тёмная тема</string>
+    <string name="setting">Настройки</string>
+    <string name="logout">Выход</string>
+    <string name="workerSelect">Я Работник</string>
+    <string name="administratorSelect">Я Администратор</string>
+    <string name="valuesEmpty">Поля не могут быть пустыми</string>
+    <string name="noConnection">Нет интернет соединения</string>
+    <string name="edit">Редактировать</string>
+    <string name="delete">Удалить</string>
+    <string name="deletingError">Невозможно выполнить действие, пока выполняется процесс удаления</string>
+    <string name="deletingWarning">Вы уверены, что хотите удалить квартиру? Все данные будут потеряны</string>
 
     <!-- Login -->
-    <string name="loginMsgRegister">New to Logistics? </string>
-    <string name="loginMsgRegisterLink"> Register</string>
-    <string name="loginErrorMsg">Invalid Email or password</string>
+    <string name="loginMsgRegister">Ещё не зарегистрированы? </string>
+    <string name="loginMsgRegisterLink"> Регистрация</string>
+    <string name="loginErrorMsg">Неверный Пароль или неверная Почта</string>
 
     <!-- AlertDialog -->
-    <string name="alertOkay">Okay</string>
-    <string name="alertYes">Yes</string>
-    <string name="alertNo">No</string>
+    <string name="alertOkay">Хорошо</string>
+    <string name="alertYes">Да</string>
+    <string name="alertNo">Нет</string>
 
     <!-- SignUp -->
-    <string name="signUp">Sign Up</string>
-    <string name="signUpPasswordNotSimilarError">Passwords are not similar</string>
-    <string name="signUpRepeatPassword">Repeat password</string>
-    <string name="signUpEmailExists">A user with the same email already exists</string>
-    <string name="signUpLogin"> Login</string>
-    <string name="signUpJoin">Joined us before? </string>
-    <string name="signUpContinue">Continue</string>
-    <string name="signUpAnd">and </string>
-    <string name="signUpPrivacyPolicy">Privacy Policy </string>
-    <string name="signUpAgree">By signing up, you\'re agree to our </string>
-    <string name="signUpTC">Terms &amp; Conditions </string>
-    <string name="signUpLittleError">is little</string>
-    <string name="signUpLargeError">is large </string>
-    <string name="signUpNumberError">must not contain numbers</string>
-    <string name="signUpGoLinkError">It is not possible to follow the link until registration is over</string>
-    <string name="signUpGoBackError">It is not possible to go to the previous page until registration has ended</string>
+    <string name="signUp">Регистрация</string>
+    <string name="signUpPasswordNotSimilarError">Пароли не совпадают</string>
+    <string name="signUpRepeatPassword">Повторите пароль</string>
+    <string name="signUpEmailExists">Пользователь с такой почтой уже существует</string>
+    <string name="signUpLogin"> Войти</string>
+    <string name="signUpJoin">Уже зарегистрированы? </string>
+    <string name="signUpContinue">Продолжить</string>
+    <string name="signUpAnd">и </string>
+    <string name="signUpAgree2">Регистрируясь Вы соглашаетесь с %s и %s</string>
+    <string name="signUpPrivacyPolicy">Политикой Конфиденциальности</string>
+    <string name="signUpTC">Пользовательским соглашением</string>
+    <string name="signUpLittleError">короткое или пустое</string>
+    <string name="signUpLargeError">которкая или пустая</string>
+    <string name="signUpNumberError">Не должно содержать цифр</string>
+    <string name="signUpGoLinkError">Перейти по ссылке невозможно до завершения регистрации</string>
+    <string name="signUpGoBackError">Перейти на предыдущую страницу невозможно до завершения регистрации</string>
 
-    <!-- Privacy Policy -->
-    <string name="privacyPolicyText">Privacy Policy Text.</string>
 
     <!-- Terms & Conditions -->
-    <string name="termsAndConditionText">Terms &amp; Conditions Text.</string>
-
-    <string name="check_in_date">Check in date</string>
-    <string name="check_out_date">Check out date</string>
-    <string name="pricePerDay">Price per day</string>
-    <string name="fio">FIO</string>
-    <string name="passport">Passport</string>
-    <string name="registration">Registration</string>
-    <string name="passportSN">Series and number</string>
+    <string name="check_in_date">Дата вьезда</string>
+    <string name="check_out_date">Дата выезда</string>
+    <string name="pricePerDay">Цена за день</string>
+    <string name="fio">ФИО</string>
+    <string name="passport">Паспорт</string>
+    <string name="registration">Прописка</string>
+    <string name="passportSN">Серия и номер</string>
 
     <!-- Terms & Conditions -->
-    <string name="address">Address</string>
-    <string name="addressError">Address is too high</string>
-    <string name="cleaningCost">Cleaning Cost</string>
+    <string name="address">Адрес</string>
+    <string name="addressError">Адрес слишком большой</string>
+    <string name="cleaningCost">Стоимость уборки</string>
     <string name="cleaningCostTemplate">300</string>
-    <string name="cleaningCostError">Cleaning cost is too high </string>
-    <string name="description">Description</string>
-    <string name="descriptionTemplate">Describe your apartment </string>
-    <string name="descriptionError">Description is too high</string>
-    <string name="flatEditorBackWarning">All data not received will be lost, do you want to continue?</string>
+    <string name="cleaningCostError">Стоимость уборки слишком большая </string>
+    <string name="description">Описание</string>
+    <string name="descriptionTemplate">Опишите вашу квартиру, данное описание будет видно работникам</string>
+    <string name="descriptionError">Описание слишком большой</string>
+    <string name="flatEditorBackWarning">Все несохранённые данные будут потеряны, вы хотите продолжить?</string>
 
     <!-- FlatInfoScreen -->
-    <string name="flatInfoMoreDetails">Apartment\'s Info</string>
-    <string name="flatInfoClientInfo">Client\'s Info</string>
+    <string name="flatInfoMoreDetails">Информация о квартире</string>
+    <string name="flatInfoClientInfo">Информация о клиенте</string>
 
     <!-- ListScreen -->
-    <string name="free">Free</string>
-    <string name="busy">Busy</string>
-    <string name="dirty">Dirty</string>
+    <string name="free">Свободно</string>
+    <string name="busy">Занято</string>
+    <string name="dirty">Грязно</string>
 
     <!-- SettingScreen -->
-    <string name="genSetting">General Settings</string>
-    <string name="genNotifications">Notifications</string>
-    <string name="genTelephone">Hide telephone number</string>
-    <string name="workerSetting">Worker Settings</string>
-    <string name="workerSeeFree">Workers see free apartments</string>
-    <string name="workerSeeDirty">Workers see dirty apartments</string>
-    <string name="workerSeeBusy">Workers see busy apartments</string>
+    <string name="genSetting">Общие настройки</string>
+    <string name="genNotifications">Уведомления</string>
+    <string name="genTelephone">Спрятать номер телефона</string>
+    <string name="workerSetting">Настройки работников</string>
+    <string name="workerSeeFree">Реботники видят чистые квартиры</string>
+    <string name="workerSeeDirty">Реботники видят грязные квартиры</string>
+    <string name="workerSeeBusy">Реботники видят занятые квартиры</string>
 
-    <string name="editorGoBackError">It is not possible to do anything before the update is completed</string>
-    <string name="editorMaxCountError">You can\'t add more than 5 images</string>
+    <string name="editorGoBackError">Вы не можете ничего сделать, пока происходит обновление</string>
+    <string name="editorMaxCountError">Вы не можете добавить больше 5 изображений</string>
 
     <!-- Текст пользовательского соглашения  -->
     <string name="TCHeaderMain">ПОЛЬЗОВАТЕЛЬСКОЕ СОГЛАШЕНИЕ</string>

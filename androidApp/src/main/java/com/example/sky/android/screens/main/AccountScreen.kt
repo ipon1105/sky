@@ -6,29 +6,23 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.rounded.Menu
-import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
-import com.example.sky.android.composables.ui.infoText
-import com.example.sky.android.composables.ui.mainText
-import com.example.sky.android.composables.ui.titleText
+import com.example.sky.android.composables.ui.MainText
+import com.example.sky.android.composables.ui.TitleText
 import com.example.sky.android.models.AccountViewModel
 import com.example.sky.android.models.data.UserData
 import com.example.sky.navigation.NavRoute
@@ -111,7 +105,7 @@ fun AccountScreen(navController: NavHostController) {
                             shape = RoundedCornerShape(largeShape)
                         ),
                 ) {
-                    AccountCard(viewModel.userData,viewModel, navController)
+                    AccountCard(viewModel.userData)
                 }
 
                 // Пробел
@@ -124,10 +118,9 @@ fun AccountScreen(navController: NavHostController) {
 
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
-fun AccountCard(data: UserData, viewModel: AccountViewModel, navController: NavHostController){
+fun AccountCard(data: UserData){
     val cardElevation = 5.dp
     val photoSize = 130.dp
-    val status = 40.dp
 
     Card(
         shape = RoundedCornerShape(size = largeShape),
@@ -162,7 +155,7 @@ fun AccountCard(data: UserData, viewModel: AccountViewModel, navController: NavH
                 Column(modifier = Modifier.padding(start = ComponentDiffSmall)) {
 
                     Row(modifier = Modifier.fillMaxWidth()){
-                        titleText(
+                        TitleText(
                             text = data.surname,
                             fontSize = 26.sp,
                             modifier = Modifier
@@ -187,9 +180,9 @@ fun AccountCard(data: UserData, viewModel: AccountViewModel, navController: NavH
 
 
                     Row() {
-                        mainText(text = data.name, fontSize = 18.sp)
+                        MainText(text = data.name, fontSize = 18.sp)
                         Spacer(modifier = Modifier.width(5.dp))
-                        mainText(text = data.patronymic, fontSize = 18.sp)
+                        MainText(text = data.patronymic, fontSize = 18.sp)
                     }
 
                     Text(modifier = Modifier.padding(top = ComponentDiffNormal),text = if (data.status == 2) "Администратор" else "Работник", fontSize =  28.sp, color = mainColor)
@@ -197,7 +190,7 @@ fun AccountCard(data: UserData, viewModel: AccountViewModel, navController: NavH
             }
 
             // Заголовок
-            mainText(modifier = Modifier.padding(start = ComponentDiffNormal), text = "Контактные данные", fontSize = 25.sp)
+            MainText(modifier = Modifier.padding(start = ComponentDiffNormal), text = "Контактные данные", fontSize = 25.sp)
 
             // Телефон
             Row(
@@ -207,8 +200,8 @@ fun AccountCard(data: UserData, viewModel: AccountViewModel, navController: NavH
                 verticalAlignment = Alignment.CenterVertically,
             )
             {
-                titleText(text = "Телефон: ")
-                mainText(text =  "${data.telephone}")
+                TitleText(text = "Телефон: ")
+                MainText(text =  "${data.telephone}")
             }
 
             // Почта
@@ -220,8 +213,8 @@ fun AccountCard(data: UserData, viewModel: AccountViewModel, navController: NavH
                 verticalAlignment = Alignment.CenterVertically,
             )
             {
-                titleText(text = "Почта: ")
-                mainText(text =  "${Firebase.auth.currentUser?.email}")
+                TitleText(text = "Почта: ")
+                MainText(text =  "${Firebase.auth.currentUser?.email}")
             }
         }
     }

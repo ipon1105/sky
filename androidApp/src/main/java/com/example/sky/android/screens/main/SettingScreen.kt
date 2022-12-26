@@ -307,10 +307,7 @@ fun WorkerSettingsCard(navController: NavHostController, viewModel: SettingViewM
             },
             buttons = {
                 Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
-                    ProgressButton(onClick = { viewModel.newWorkerAdd( ) }, text = "Добавить", modifier = Modifier.padding(
-                        bottom = ComponentDiffNormal,
-                        end = ComponentDiffNormal
-                    ))
+                    ProgressButton(onClick = { viewModel.newWorkerAdd( ) }, text = "Добавить")
                 }
             }
         )
