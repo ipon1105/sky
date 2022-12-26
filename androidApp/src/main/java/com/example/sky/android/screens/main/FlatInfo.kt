@@ -673,6 +673,7 @@ private fun addDealBlock(viewModel: DealViewModel, dateList: List<LocalDate>){
             horizontalArrangement = Arrangement.Center
         ){
             ProgressButton(
+                modifier = Modifier.padding(ComponentDiffSmall),
                 text = if (viewModel.isSelectedDeal) stringResource(id = R.string.edit) else stringResource(id = R.string.add),
                 onClick = { viewModel.btnApplyClick(
                     Timestamp(SimpleDateFormat("yyyy-MM-dd").parse(dateList.first().toString()).time),

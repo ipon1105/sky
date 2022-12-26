@@ -1,6 +1,5 @@
 package com.example.sky.android.screens.main
 
-import android.widget.RatingBar
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -27,15 +26,14 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.sky.android.R
-import com.example.sky.android.models.WorkerModel
-import com.example.sky.android.composables.RatingBar
-import com.example.sky.android.models.authorization.LoginViewModel
-import com.example.sky.android.models.data.SettingViewModel
+import com.example.sky.android.composables.ui.CustomTextField
+import com.example.sky.android.composables.ui.ProgressButton
+import com.example.sky.android.models.SettingViewModel
 import com.example.sky.android.models.data.UserData
-import com.example.sky.navigation.NavRoute
 import com.example.sky.ui.theme.*
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -294,7 +292,31 @@ fun WorkerSettingsCard(navController: NavHostController, viewModel: SettingViewM
             }
         }
     }
+    
+    if (viewModel.workerDialog){
+        AlertDialog(
+            onDismissRequest = { viewModel.newWorker(false) },
+            title = { Text(text = "Добавить нового работника") },
+            text = {
+                CustomTextField(
+                    text = viewModel.value,
+                    onValueChange = { viewModel.newValue(it) },
+                    placeholderText = "Введите id работника",
+                    fontSize = 24.sp
+                )
+            },
+            buttons = {
+                Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
+                    ProgressButton(onClick = { viewModel.newWorkerAdd( ) }, text = "Добавить", modifier = Modifier.padding(
+                        bottom = ComponentDiffNormal,
+                        end = ComponentDiffNormal
+                    ))
+                }
+            }
+        )
+    }
 }
+
 
 @Composable
 fun WorkerCard(navController: NavHostController, userData: UserData, viewModel: SettingViewModel, index: Int){
@@ -303,7 +325,6 @@ fun WorkerCard(navController: NavHostController, userData: UserData, viewModel: 
     val imageSize = 50.dp
     val difSizes = 15.dp
 
-    // TODO: Сделать переход на аккаунт работника по клику на карточку
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -383,7 +404,7 @@ fun AddNewWorker(navController: NavHostController, viewModel: SettingViewModel){
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = verticalNormal)
-            .clickable { viewModel.newFlat(navController) }
+            .clickable { viewModel.newWorker(true) }
             .height(cardSize)
             .border(
                 border = BorderStroke(borderWeight, color = lightGray),

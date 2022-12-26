@@ -195,6 +195,7 @@ fun VerticalCustomTextField(
 // Кнопка с заменой на загрузку
 @Composable
 fun ProgressButton(
+    modifier: Modifier = Modifier,
     text: String = "",
     onClick: () -> Unit,
     btnColor: Color = FlatGreen,

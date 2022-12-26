@@ -1,6 +1,6 @@
 package com.example.sky.android.screens.main
 
-import android.util.Log
+import android.annotation.SuppressLint
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -11,7 +11,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material.icons.rounded.Menu
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -21,21 +20,20 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.sky.android.R
-import com.example.sky.android.composables.RatingBar
-import com.example.sky.android.models.WorkerModel
-import com.example.sky.navigation.NavRoute
+import com.example.sky.android.models.data.Worker
+import com.example.sky.android.models.WorkerSearchViewModel
+import com.example.sky.android.models.data.UserData
 import com.example.sky.ui.theme.*
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
 
 @Composable
 fun WorkerSearchScreen(navController: NavHostController){
+    var viewModel = viewModel<WorkerSearchViewModel>()
 
     Scaffold(
         modifier = Modifier
@@ -83,7 +81,7 @@ fun WorkerSearchScreen(navController: NavHostController){
                 Spacer(modifier = Modifier.padding(top = CardTopPaddingNormal))
 
                 // Поисковой блок
-                workerSearch(navController = navController)
+                workerSearch(viewModel)
 
                 // Пробел
                 Spacer(modifier = Modifier.padding(bottom = CardBottomPaddingNormal))
@@ -93,32 +91,12 @@ fun WorkerSearchScreen(navController: NavHostController){
 }
 
 @Composable
-fun workerSearch(navController: NavHostController){
+fun workerSearch(viewModel: WorkerSearchViewModel){
     val maxLazyHeight = 600.dp
     val cardElevation = 5.dp
     var search by remember {
         mutableStateOf("")
     }
-    val db = Firebase.firestore
-
-    // TODO: Подгружать список работников из интернета по несколько штук
-    var workers = listOf(
-        WorkerModel(1u, "photo1", "Name", "Surname", "Patronymicddddddddddddddddddddddddddddddddddddd", "DescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescription"),
-        WorkerModel(2u, "photo2", "Name", "Surname", "Patronymic", "Description"),
-        WorkerModel(3u, "photo2", "Name", "Surname", "Patronymic", "Description"),
-        WorkerModel(4u, "photo2", "Name", "Surname", "Patronymic", "Description"),
-        WorkerModel(5u, "photo2", "Name", "Surname", "Patronymic", "Description"),
-        WorkerModel(5u, "photo2", "Name", "Surname", "Patronymic", "Description"),
-        WorkerModel(5u, "photo2", "Name", "Surname", "Patronymic", "Description"),
-        WorkerModel(5u, "photo2", "Name", "Surname", "Patronymic", "Description"),
-        WorkerModel(5u, "photo2", "Name", "Surname", "Patronymic", "Description"),
-        WorkerModel(5u, "photo2", "Name", "Surname", "Patronymic", "Description"),
-        WorkerModel(5u, "photo2", "Name", "Surname", "Patronymic", "Description"),
-        WorkerModel(5u, "photo2", "Name", "Surname", "Patronymic", "Description"),
-        WorkerModel(5u, "photo2", "Name", "Surname", "Patronymic", "Description"),
-        WorkerModel(5u, "photo2", "Name", "Surname", "Patronymic", "Description"),
-        null
-    )
 
     // Карточка
     Card(
@@ -169,9 +147,10 @@ fun workerSearch(navController: NavHostController){
                     .height(maxLazyHeight)
                     .padding(top = ComponentDiffNormal)
             ){
-                itemsIndexed(items = workers){index, item ->
+                itemsIndexed(items = viewModel.workerList){index, item ->
                     if (item != null)
-                        workerCard(navController, item)
+
+                        workerCard(item, viewModel.usdataList[index], viewModel)
 
                 }
             }
@@ -179,8 +158,9 @@ fun workerSearch(navController: NavHostController){
     }
 }
 
+@SuppressLint("UnrememberedMutableState")
 @Composable
-fun workerCard(navController: NavHostController, worker:WorkerModel){
+fun workerCard(worker: Worker, userData: UserData, viewModel: WorkerSearchViewModel){
     val cardElevation = 15.dp
     val cardSize = 100.dp
     val status = 30.dp
@@ -189,7 +169,7 @@ fun workerCard(navController: NavHostController, worker:WorkerModel){
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = verticalNormal)
-            .clickable { /*TODO: Сделать переход на страницу аккаунта*/ }
+            .clickable { viewModel.newNotify(worker) }
             .height(cardSize),
         shape = RoundedCornerShape(size = largeShape),
         elevation = cardElevation,
@@ -204,8 +184,7 @@ fun workerCard(navController: NavHostController, worker:WorkerModel){
                     .background(color = DarkGray, shape = RoundedCornerShape(size = largeShape))
             ){
                 Image(
-                    //TODO: Сделать загрузку изображений из базы данных firebase
-                    imageVector = ImageVector.vectorResource(id = R.drawable.map),
+                    imageVector = ImageVector.vectorResource(id = R.drawable.no_image),
                     contentDescription = stringResource(id = R.string.imageDescriptionFlatPhoto),
                     modifier = Modifier
                         .fillMaxSize()
@@ -220,29 +199,16 @@ fun workerCard(navController: NavHostController, worker:WorkerModel){
             ) {
                 // ФИО
                 Text(
-                    text = "${worker.surname} ${worker.name} ${worker.patronymic}",
+                    text = "${userData.surname} ${userData.name} ${userData.patronymic}",
                     color = GrayTextColor,
                     fontWeight = FontWeight.Bold,
                     overflow = TextOverflow.Ellipsis,
                     maxLines = 1,
                 )
-
-                // TODO: Разобраться с рейтингом работника
-                // Оценка
-                RatingBar(modifier = Modifier
-                    .height(17.dp)
-                    .width(85.dp), rating = 2.0f, color = RatingBarYellow)
-
-                // Описание
-                Text(
-                    modifier = Modifier
-                        .fillMaxHeight(),
-                    maxLines = 3,
-                    text = worker.description,
-                    overflow = TextOverflow.Ellipsis,
-                    softWrap = true,
-                    color = GrayTextColor,
-                )
+                
+                Button(onClick = { viewModel.newNotify(worker) }) {
+                    Text(text = "Пригласить")
+                }
             }
 
         }

@@ -1,8 +1,9 @@
-package com.example.sky.android.models
+package com.example.sky.android.models.data
 
 data class Worker(
-    val auth: String = "",
+    var auth: String = "",
     val info: String = "",
     val description: String = "",
     var adminList: List<String> = emptyList(),
+    var notifyList: List<String> = emptyList(),
 )

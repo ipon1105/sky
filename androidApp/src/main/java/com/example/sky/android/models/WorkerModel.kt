@@ -8,5 +8,5 @@ data class WorkerModel(
     val surname: String,
     val patronymic: String,
     val description: String
-)
 
+)

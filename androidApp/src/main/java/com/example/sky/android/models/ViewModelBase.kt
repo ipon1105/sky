@@ -543,7 +543,7 @@ suspend fun deleteFlatFromFirestore(flatId: String) : String{
 // Получаем запись Работника из базы данных
 suspend fun updateWorker(worker: Worker){
     try {
-        Firebase.firestore.collection("Worker").document(worker.auth).set(worker)
+        Firebase.firestore.collection("Worker").document(worker.auth).update("adminList", worker.adminList)
             .addOnCompleteListener(){
                 Log.i(TAG, "getWorkerFromFirestore is complete")
                 Log.i(TAG, "getWorkerFromFirestore worker: $worker")
@@ -570,7 +570,7 @@ suspend fun getWorkerListFromFirestore(worker: Worker) : List<Flat> {
 }
 
 // Получаем запись Работника из базы данных
-suspend fun getWorkerFromFirestore() : Worker{
+suspend fun getWorkerFromFirestore() : Worker {
     var worker = Worker()
 
     try {
@@ -598,8 +598,9 @@ suspend fun getWorkerFromFirestore() : Worker{
 }
 
 // Получаем запись Работника из базы данных
-suspend fun getWorkerFromFirestore(id: String) : Worker{
+suspend fun getWorkerFromFirestore(id: String) : Worker? {
     var worker = Worker()
+    worker.auth = "-1"
 
     try {
         Firebase.firestore.collection("Worker").document(id).get()
@@ -622,6 +623,8 @@ suspend fun getWorkerFromFirestore(id: String) : Worker{
         Log.e(TAG, "getWorkerFromFirestore: $e")
     }
 
+    if (worker.auth.equals("-1"))
+        return null
     return worker
 }
 
