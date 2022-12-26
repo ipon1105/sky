@@ -25,6 +25,7 @@ import com.example.sky.android.composables.ui.MainText
 import com.example.sky.android.composables.ui.TitleText
 import com.example.sky.android.models.AccountViewModel
 import com.example.sky.android.models.data.UserData
+import com.example.sky.android.models.getUserId
 import com.example.sky.navigation.NavRoute
 import com.example.sky.ui.theme.*
 import com.google.firebase.auth.ktx.auth
@@ -152,7 +153,6 @@ fun AccountCard(data: UserData){
 
                 //Личная информация
                 Column(modifier = Modifier.padding(start = ComponentDiffSmall)) {
-
                     Row(modifier = Modifier.fillMaxWidth()){
                         TitleText(
                             text = data.surname,
@@ -170,7 +170,11 @@ fun AccountCard(data: UserData){
                         MainText(text = data.patronymic, fontSize = NormalFont)
                     }
 
-                    Text(modifier = Modifier.padding(top = ComponentDiffNormal),text = if (data.status == 2) "Администратор" else if (data.status == 1) "Работник" else "Загружается", fontSize =  28.sp, color = mainColor)
+                    // Показываем id пользователя
+                    Text(text = stringResource(id = R.string.id) + ": " + getUserId())
+
+                    // Статус пользователя
+                    Text(text = if (data.status == 2) "Администратор" else if (data.status == 1) "Работник" else "Загружается", fontSize =  28.sp, color = mainColor)
                 }
             }
 
@@ -186,7 +190,7 @@ fun AccountCard(data: UserData){
             )
             {
                 TitleText(text = "Телефон: ")
-                MainText(text =  "${data.telephone}")
+                MainText(text =  data.telephone)
             }
 
             // Почта
