@@ -9,3 +9,15 @@ data class UserData (
     val telephone: String = "",
     val status: Int = -1,
 )
+
+// Возвращает объект с пометкой, что данные загружаются
+fun getUserDataLoading():UserData{
+    return UserData(
+        name = "Имя загружается",
+        surname = "Фамилия загружается",
+        patronymic = "Отчество загружается",
+        photo = "",
+        telephone = "Загружается",
+        status = -1,
+    )
+}

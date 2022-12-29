@@ -32,12 +32,10 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import coil.annotation.ExperimentalCoilApi
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
@@ -68,8 +66,8 @@ fun MoreDetailBlock(viewModel: FlatInfoViewModel){
 
     // Из одной квартиры выносит список квартир, которые собирается отображать (в виде ссылок для скачивания)
     var imageList: List<Uri?> = viewModel.downloadImageList
-    if (imageList.size == 0)
-        imageList += null
+    if (imageList.isEmpty())
+        imageList = imageList.plus(null)
 
     val pagerState = rememberPagerState(initialPage = 0)
     val maxHorizontalPagerHeight = 200.dp
@@ -136,11 +134,13 @@ fun MoreDetailBlock(viewModel: FlatInfoViewModel){
             Row(modifier = Modifier.fillMaxWidth()) {
                 // Текст
                 ClickableText(
+                    modifier = Modifier
+                        .align(Alignment.CenterVertically),
                     text = AnnotatedString(text = stringResource(id = R.string.flatInfoMoreDetails)) ,
                     onClick = { viewModel.setShowInfoBlock(!viewModel.showInfoBlock) },
                     style = TextStyle(
                         color = HeaderMainColorMain,
-                        fontSize = LargeFont
+                        fontSize = NormalLargeFont
                     ),
                 )
 
@@ -154,7 +154,8 @@ fun MoreDetailBlock(viewModel: FlatInfoViewModel){
                         }
                         .size(dropDownImageSize)
                         .align(Alignment.CenterVertically)
-                        .clickable { viewModel.setShowInfoBlock(!viewModel.showInfoBlock) },
+                        .clickable { viewModel.setShowInfoBlock(!viewModel.showInfoBlock) }
+                        .weight(1f),
                     colorFilter = ColorFilter.tint(color = ImageDropDownColorGray),
                 )
             }
@@ -217,7 +218,7 @@ fun MoreDetailBlock(viewModel: FlatInfoViewModel){
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun CalendarBlock(viewModel: FlatInfoViewModel){
-    var specViewModel = viewModel<DealViewModel>()
+    val specViewModel = viewModel<DealViewModel>()
     if (viewModel.flat.detail.isNotEmpty())
         specViewModel.start(viewModel.flat.detail, LocalContext.current)
 
@@ -230,7 +231,7 @@ fun CalendarBlock(viewModel: FlatInfoViewModel){
                 shape = RoundedCornerShape(largeShape)
             ),
     ) {
-        var calendarState = rememberSelectableCalendarState(
+        val calendarState = rememberSelectableCalendarState(
             initialMonth = YearMonth.now(),
             initialSelectionMode = SelectionMode.Period,
         )
@@ -256,7 +257,7 @@ fun CalendarBlock(viewModel: FlatInfoViewModel){
                 val today = getDateTime(SimpleDateFormat("yyyy-MM-dd").parse(date.toString()).time)
 
                 // Разукрашиваем сделки
-                var deal: Deal? = specViewModel.isBetween(today)
+                val deal: Deal? = specViewModel.isBetween(today)
                 if (deal != null)
                     color = Color(deal.color)
 
@@ -271,7 +272,7 @@ fun CalendarBlock(viewModel: FlatInfoViewModel){
                         selectionState.onDateSelected(date)
                         if ( selectionState.selection.isNotEmpty()) {
                             Log.d("viewModel", "ABX")
-                            var tmpDeal = specViewModel.isInside(
+                            val tmpDeal = specViewModel.isInside(
                                 getDateTime(SimpleDateFormat("yyyy-MM-dd").parse(selectionState.selection.first().toString()).time),
                                 getDateTime(SimpleDateFormat("yyyy-MM-dd").parse(selectionState.selection.last().toString()).time)
                             )
@@ -299,7 +300,7 @@ fun CalendarBlock(viewModel: FlatInfoViewModel){
                         if (dayState.isCurrentDay){
                             Text(text = "now", modifier = Modifier.align(Alignment.Center))
                         } else
-                            Text(text = "${dayState.date.dayOfMonth.toString()}", modifier = Modifier.align(Alignment.Center))
+                            Text(text = dayState.date.dayOfMonth.toString(), modifier = Modifier.align(Alignment.Center))
                     }
                 }
 
@@ -307,7 +308,7 @@ fun CalendarBlock(viewModel: FlatInfoViewModel){
         )
 
         if (calendarState.selectionState.selection.isNotEmpty())
-            addDealBlock(viewModel = specViewModel, dateList = calendarState.selectionState.selection)
+            AddDealBlock(viewModel = specViewModel, dateList = calendarState.selectionState.selection)
 
     }
 }
@@ -461,23 +462,17 @@ fun FlatInfoScreen(navController: NavHostController, flatId: String = ""){
                                 Text( text = stringResource(id = R.string.alertNo), color = Color.White, modifier = Modifier.padding(all = TextTopSmall))
                             }
                         }
+
                     }
                 )
         }
     )
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
-@Composable
-@Preview(showBackground = true, backgroundColor = 0x00FFFFFF)
-fun myPreview(){
-    FlatInfoScreen(navController = rememberNavController())
-}
-
 @OptIn(ExperimentalGlideComposeApi::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-private fun addDealBlock(viewModel: DealViewModel, dateList: List<LocalDate>){
+private fun AddDealBlock(viewModel: DealViewModel, dateList: List<LocalDate>){
 
     // Главное содержимое блока
     Column(
@@ -495,8 +490,8 @@ private fun addDealBlock(viewModel: DealViewModel, dateList: List<LocalDate>){
             verticalAlignment = Alignment.CenterVertically,
         )
         {
-            titleText(text = stringResource(id = R.string.check_in_date) + ": ")
-            mainText(
+            TitleText(text = stringResource(id = R.string.check_in_date) + ": ")
+            MainText(
                 text =
                 if (viewModel.isSelectedDeal)
                     GetTimeString(viewModel.dateIn)
@@ -512,8 +507,8 @@ private fun addDealBlock(viewModel: DealViewModel, dateList: List<LocalDate>){
             verticalAlignment = Alignment.CenterVertically,
         )
         {
-            titleText(text = stringResource(id = R.string.check_out_date) + ": ")
-            mainText(text =
+            TitleText(text = stringResource(id = R.string.check_out_date) + ": ")
+            MainText(text =
             if (viewModel.isSelectedDeal)
                 GetTimeString(viewModel.dateOut)
             else
@@ -540,8 +535,8 @@ private fun addDealBlock(viewModel: DealViewModel, dateList: List<LocalDate>){
                 verticalAlignment = Alignment.CenterVertically,
             )
             {
-                titleText(text = stringResource(id = R.string.pricePerDay) + ": ")
-                mainText(text = viewModel.price)
+                TitleText(text = stringResource(id = R.string.pricePerDay) + ": ")
+                MainText(text = viewModel.price)
             }
         }
 
@@ -673,7 +668,6 @@ private fun addDealBlock(viewModel: DealViewModel, dateList: List<LocalDate>){
             horizontalArrangement = Arrangement.Center
         ){
             ProgressButton(
-                modifier = Modifier.padding(ComponentDiffSmall),
                 text = if (viewModel.isSelectedDeal) stringResource(id = R.string.edit) else stringResource(id = R.string.add),
                 onClick = { viewModel.btnApplyClick(
                     Timestamp(SimpleDateFormat("yyyy-MM-dd").parse(dateList.first().toString()).time),

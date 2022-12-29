@@ -84,20 +84,6 @@ fun LoginScreen(navController: NavHostController) {
             onValueChange = { viewModel.setPassword(it) },
         )
 
-        // Ссылка на страницу забыл пароль
-        Row(
-            horizontalArrangement = Arrangement.End,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(
-                text = stringResource(id = R.string.forgotPassword),
-                modifier = Modifier
-                    .padding(top = TextTopSmall)
-                    .clickable { viewModel.goLinkToForgotPassword(navController = navController) },
-                color = linkColor
-            )
-        }
-
         // Кнопка входа
         Button(
             enabled = !viewModel.isAuthLoading,

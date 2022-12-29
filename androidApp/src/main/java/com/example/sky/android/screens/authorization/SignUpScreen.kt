@@ -6,6 +6,7 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -17,6 +18,9 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -34,7 +38,6 @@ fun consistDigits(str: String): Boolean {
     return false
 }
 
-//@Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
 @OptIn(ExperimentalMaterialApi::class, ExperimentalCoroutinesApi::class)
 @SuppressLint("UnrememberedMutableState", "StateFlowValueCalledInComposition")
 @Composable
@@ -45,6 +48,62 @@ fun SignUpScreen(navController: NavHostController) {
     val connection by connectivityState()
     viewModel.setInternet( connection === ConnectionState.Available )
 
+    // Строка аннотации
+    val annotatedLinkString: AnnotatedString = buildAnnotatedString {
+
+        val PP = stringResource(id = R.string.signUpPrivacyPolicy, )
+        val TC = stringResource(id = R.string.signUpTC, )
+        val res = stringResource(id = R.string.signUpAgree2, PP, TC)
+
+        val startPP = res.indexOf(PP)
+        val startTC = res.indexOf(TC)
+
+        val endPP = startPP + PP.length
+        val endTC = startTC + TC.length
+
+        append(res)
+
+        // Обычный текст
+        addStyle(
+            style = SpanStyle(
+                color = Color.Gray,
+                fontSize = SmallFont,
+            ), start = 0, end = res.length
+        )
+
+        // Ссылка
+        addStyle(
+            style = SpanStyle(
+                color = linkColor,
+                fontSize = SmallFont,
+            ), start = startPP, end = endPP
+        )
+
+        // Ссылка
+        addStyle(
+            style = SpanStyle(
+                color = linkColor,
+                fontSize = SmallFont,
+            ), start = startTC, end = endTC
+        )
+
+        // Для перехода на политику конфиденциальности
+        addStringAnnotation(
+            tag = "navigation",
+            annotation = "PrivacyPolicy",
+            start = startPP,
+            end = endPP
+        )
+
+        // Для перехода на пользовательское соглашение
+        addStringAnnotation(
+            tag = "navigation",
+            annotation = "TermsAndConditions",
+            start = startTC,
+            end = endTC
+        )
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -52,7 +111,6 @@ fun SignUpScreen(navController: NavHostController) {
             .background(Color.White)
             .padding(ScreenArea)
     ){
-        //TODO: Заменить верхнее меню на topBar
         //Кнопка назад
         Row(horizontalArrangement = Arrangement.Start){
             Image(
@@ -192,30 +250,22 @@ fun SignUpScreen(navController: NavHostController) {
         }
 
         // Ссылки на Пользовательсткое соглашение и Политику конфиденциальности
-        Column(modifier = Modifier.fillMaxWidth()) {
-            Row(
-                horizontalArrangement = Arrangement.Start,
-                modifier = Modifier
-                    .padding(top = TextTopSmall)
-                    .fillMaxWidth()
-            ) {
-                Text(text = stringResource(id = R.string.signUpAgree) + " ", color = Color.Gray)
-                Text(text = stringResource(id = R.string.signUpTC),
-                     modifier = Modifier.clickable { viewModel.goLinkToTC(navController) },
-                     color = linkColor
-                )
+        ClickableText(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = ComponentDiffSmall),
+            text = annotatedLinkString,
+            onClick = {
+                annotatedLinkString
+                    .getStringAnnotations("navigation", it, it)
+                    .firstOrNull()?.let { stringAnnotation ->
+                        when(stringAnnotation.item){
+                            "PrivacyPolicy" -> viewModel.goLinkToPrivacyPolicy(navController)
+                            "TermsAndConditions" -> viewModel.goLinkToTC(navController)
+                        }
+                    }
             }
-            Row(
-                horizontalArrangement = Arrangement.Start,
-                modifier = Modifier.fillMaxWidth()
-            ){
-                Text(text = stringResource(id = R.string.signUpAnd) + " ", color = Color.Gray)
-                Text(text = stringResource(id = R.string.signUpPrivacyPolicy),
-                     modifier = Modifier.clickable { viewModel.goLinkToPrivacyPolicy(navController) },
-                     color = linkColor
-                )
-            }
-        }
+        )
 
         // Кнопка продолжить
         Button(
